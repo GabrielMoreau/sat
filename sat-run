@@ -66,6 +66,9 @@ trap failure_cleanup INT TERM HUP
 # Execute job
 "${JOBFILE}"
 RETURNCODE=$?
+
+trap - INT TERM HUP
+
 ENDTIME="$(date -Is)"
 
 # Successful execution
