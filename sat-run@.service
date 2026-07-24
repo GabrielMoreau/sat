@@ -3,4 +3,5 @@ Description=SAT one-shot job %i
 
 [Service]
 Type=oneshot
+KillMode=control-group
 ExecStart=/usr/libexec/sat/sat-run %i
