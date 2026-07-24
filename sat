@@ -12,27 +12,68 @@ export LANG=C
 
 JOBDIR=/var/lib/sat/job
 SYSTEMDDIR=/etc/systemd/system
+JOB_SHELL=/bin/sh
 
-mkdir -p "${JOBDIR}"
+OPT_SHORT=bh
+OPT_LONG=bash,help
+if ! OPT_PARSED=$(getopt --options "${OPT_SHORT}" --longoptions "${OPT_LONG}" --name "$0" -- "$@")
+then
+  echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
+  exit 1
+fi
+eval set -- "${OPT_PARSED}"
+
+# get options
+while true
+do
+  case "$1" in
+    -b|--bash)
+      JOB_SHELL=/bin/bash
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM"
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
+      exit 1
+      ;;
+  esac
+done
 
 if [ $# -ne 2 ]
 then
-  echo "Usage: sat YYYY-MM-DD HH:MM" >&2
+  echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
   exit 1
 fi
-
 DATE="$1 $2"
+
+mkdir -p "${JOBDIR}"
+
+# Check job shell
+if [ ! -x "${JOB_SHELL}" ]
+then
+  echo "sat: shell not found: ${JOB_SHELL}" >&2
+  exit 1
+fi
 # Check date syntax with systemd
-if ! systemd-analyze calendar "${DATE}" >/dev/null 2>&1; then
-    echo "sat: invalid date expression: ${DATE}" >&2
-    exit 1
+if ! systemd-analyze calendar "${DATE}" >/dev/null 2>&1
+then
+  echo "sat: invalid date expression: ${DATE}" >&2
+  exit 1
 fi
 # Check date in the future
 DATE_TARGET=$(date -d "${DATE}" +%s)
 DATE_NOW=$(date +%s)
-if [ "${DATE_TARGET}" -le "${DATE_NOW}" ]; then
-    echo "sat: date must be in the future: ${DATE}" >&2
-    exit 1
+if [ "${DATE_TARGET}" -le "${DATE_NOW}" ]
+then
+  echo "sat: date must be in the future: ${DATE}" >&2
+  exit 1
 fi
 
 # Alloc an atomic job number
@@ -54,18 +95,18 @@ echo $((ID+1)) > "${IDFILE}"
 JOBID=$(printf "%06d" "${ID}")
 
 JOBFILE="${JOBDIR}/${JOBID}.sh"
-TIMER="${SYSTEMDDIR}/sat-${JOBID}.timer"
+TIMERFILE="${SYSTEMDDIR}/sat-${JOBID}.timer"
 
 # Read script from stdin
-cat > "${JOBFILE}" <<EOF
-#!/bin/sh
-set -e
-
-$(cat)
-EOF
+{
+  echo "#!${JOB_SHELL}"
+  echo "set -e"
+  echo ''
+  cat
+} > "${JOBFILE}"
 chmod 0700 "${JOBFILE}"
 
-cat > "${TIMER}" <<EOF
+cat > "${TIMERFILE}" <<EOF
 [Unit]
 Description=SAT job ${JOBID}
 
