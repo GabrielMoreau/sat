@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# Script: /usr/libexec/sat/sat-run
+# Description: execute a SAT job
+#
+# 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+set -u
+
+JOBID="${1:-}"
+
+LANG=C
+
+JOBDIR="/var/lib/sat/job"
+SYSTEMDDIR="/etc/systemd/system"
+
+JOBFILE="${JOBDIR}/${JOBID}.sh"
+STATUSFILE="${JOBDIR}/${JOBID}.status"
+SYSTEMDTIMER="sat-${JOBID}.timer"
+SYSTEMDSERVICE="sat-run@${JOBID}.service"
+
+usage() {
+  echo "Usage: sat-run JOB_ID" >&2
+  exit 2
+}
+
+if [ -z "${JOBID}" ]
+then
+  usage
+fi
+
+if [ ! -x "${JOBFILE}" ]
+then
+  echo "sat-run: missing or non executable job: ${JOBFILE}" >&2
+  exit 127
+fi
+
+
+STARTTIME="$(date -Is)"
+
+# Mark job as running
+cat > "${STATUSFILE}" <<EOF
+state=running
+start=${STARTTIME}
+EOF
+
+# Ensure a failure state if the process is interrupted
+failure_cleanup() {
+  if [ -f "${STATUSFILE}" ]
+  then
+    cat > "${STATUSFILE}" <<EOF
+state=failed
+exit=130
+start=${STARTTIME}
+end=$(date -Is)
+reason=interrupted
+EOF
+  fi
+  exit 130
+}
+
+trap failure_cleanup INT TERM HUP
+
+# Execute job
+"${JOBFILE}"
+RETURNCODE=$?
+ENDTIME="$(date -Is)"
+
+# Successful execution
+if [ "$RETURNCODE" -eq 0 ]
+then
+  systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+  rm -f "${SYSTEMDDIR}/${SYSTEMDTIMER}" "${JOBFILE}" "${STATUSFILE}"
+  systemctl daemon-reload
+  exit 0
+fi
+
+# Failed execution
+cat > "${STATUSFILE}" <<EOF
+state=failed
+exit=${RETURNCODE}
+start=${STARTTIME}
+end=${ENDTIME}
+EOF
+
+# Disable timer to avoid automatic rerun
+systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+exit "${RETURNCODE}"

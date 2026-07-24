@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+# Script: /usr/bin/sat
+# Description: submit SAT job (like at UNIX command)
+#
+# 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+set -euo pipefail
+
+LANG=C
+
+JOBDIR=/var/lib/sat/job
+SYSTEMDDIR=/etc/systemd/system
+
+mkdir -p "${JOBDIR}"
+
+if [ $# -ne 2 ]
+then
+  echo "Usage: sat YYYY-MM-DD HH:MM" >&2
+  exit 1
+fi
+
+DATE="$1 $2"
+
+# Alloc an atomic job number
+exec 9>/var/lib/sat/lock
+
+flock 9
+
+IDFILE=/var/lib/sat/nextid
+
+if [ -f "${IDFILE}" ]
+then
+  ID=$(cat "${IDFILE}")
+else
+  ID=1
+fi
+
+echo $((ID+1)) > "${IDFILE}"
+
+JOBID=$(printf "%06d" "${ID}")
+
+JOBFILE="${JOBDIR}/${JOBID}.sh"
+TIMER="${SYSTEMDDIR}/sat-${JOBID}.timer"
+
+# Read script from stdin
+cat > "${JOBFILE}" <<EOF
+#!/bin/bash
+set -e
+
+$(cat)
+EOF
+chmod 0700 "${JOBFILE}"
+
+cat > "${TIMER}" <<EOF
+[Unit]
+Description=SAT job ${JOBID}
+
+[Timer]
+OnCalendar=$DATE
+Persistent=true
+Unit=sat-run@${JOBID}.service
+
+[Install]
+WantedBy=timers.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now "sat-${JOBID}.timer"
+
+echo "scheduled job ${JOBID} at $DATE"

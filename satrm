@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# Script: /sur/bin/satrm
+# Description: remove SAT job
+#
+# 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+set -euo pipefail
+
+LANG=C
+
+JOBDIR=/var/lib/sat/job
+SYSTEMDDIR=/etc/systemd/system
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: satrm ID [ID ...]" >&2
+  exit 1
+fi
+
+CHANGED=0
+
+for JOBID in "$@"
+do
+  # Could be 42 or 000042
+  JOBID=$(printf "%06d" "${JOBID}" 2>/dev/null || true)
+
+  JOBFILE="${JOBDIR}/${JOBID}.sh"
+  STATUSFILE="${JOBDIR}/${JOBID}.status"
+  SYSTEMDTIMER="sat-${JOBID}.timer"
+
+  if [ ! -f "${JOBFILE}" ] && [ ! -f "${SYSTEMDDIR}/${SYSTEMDTIMER}" ]
+  then
+    echo "satrm: job ${JOBID} introuvable" >&2
+    continue
+  fi
+
+  echo "remove job ${JOBID}"
+  # Clean stop if the timer exist
+  systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+
+  rm -f \
+    "${SYSTEMDDIR}/${SYSTEMDTIMER}" \
+    "${JOBFILE}" \
+    "${STATUSFILE}"
+
+  CHANGED=1
+done
+
+if [ "${CHANGED}" -eq 1 ]
+then
+  systemctl daemon-reload
+fi

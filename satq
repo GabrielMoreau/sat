@@ -1,0 +1,180 @@
+#!/bin/bash
+#
+# Script: /usr/bin/satq
+# Description: list SAT jobs
+#
+# 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+set -euo pipefail
+
+LANG=C
+
+JOBDIR='/var/lib/sat/job'
+SYSTEMDDIR='/etc/systemd/system'
+
+usage() {
+  cat <<EOF
+Usage:
+  satq                 List scheduled jobs
+  satq -f|--failed     List failed jobs
+  satq JOB_ID          Show detailed job information
+  satq -h|--help       Show this help
+EOF
+}
+
+normalize_id() {
+  printf "%06d" "$1"
+}
+
+get_command() {
+  local id="$1"
+  local file="${JOBDIR}/$id.sh"
+
+  if [ ! -f "${file}" ]
+  then
+    echo "-"
+    return
+  fi
+
+  # Ignore boilerplate
+  grep -vE '^(#!/|set )' "${file}" | head -1
+}
+
+get_state() {
+  local id="$1"
+
+  if [ -f "${JOBDIR}/${id}.status" ]
+  then
+    echo "failed"
+    return
+  fi
+
+  if systemctl is-active --quiet "sat-run@${id}.service"
+  then
+    echo "running"
+    return
+  fi
+
+  echo "waiting"
+}
+
+list_jobs() {
+  printf "%-8s %-25s %-10s %s\n" "ID" "NEXT RUN" "STATE" "COMMAND"
+
+  for timer in "${SYSTEMDDIR}"/sat-*.timer
+  do
+    [ -e "$timer" ] || continue
+
+    local id
+    id=$(basename "$timer" .timer)
+    id=${id#sat-}
+
+    local next
+    next=$(systemctl show "${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo "-")
+
+    local state
+    state=$(get_state "${id}")
+
+    local cmd
+    cmd=$(get_command "${id}")
+
+    printf "%-8s %-25s %-10s %s\n" "${id}" "$next" "$state" "$cmd"
+  done
+}
+
+list_failed() {
+  printf "%-8s %-25s %-8s %s\n" "ID" "LAST RUN" "EXIT" "COMMAND"
+
+  for status in "${JOBDIR}"/*.status
+  do
+    [ -e "$status" ] || continue
+
+    local id
+    id=$(basename "$status" .status)
+
+    local date
+    date=$(grep '^date=' "$status" | cut -d= -f2-)
+
+    local exitcode
+    exitcode=$(grep '^exit=' "$status" | cut -d= -f2)
+
+    local cmd
+    cmd=$(get_command "${id}")
+    printf "%-8s %-25s %-8s %s\n" "${id}" "$date" "$exitcode" "$cmd"
+  done
+}
+
+show_job() {
+  local id
+  id=$(normalize_id "$1")
+
+  local job="${JOBDIR}/${id}.sh"
+  local status="${JOBDIR}/${id}.status"
+  local timer="${SYSTEMDDIR}/sat-${id}.timer"
+
+  if [ ! -f "$job" ] && [ ! -f "$timer" ]
+  then
+    echo "satq: job ${id} not found" >&2
+    exit 1
+  fi
+
+  echo "Job ID:       ${id}"
+  if [ -f "$status" ]
+  then
+    echo "State:        failed"
+    grep '^exit=' "$status" | sed 's/^/Exit status:  /'
+    grep '^date=' "$status" | sed 's/^/Last run:     /'
+  else
+    echo "State:        waiting"
+  fi
+
+  echo ''
+  if [ -f "$timer" ]
+  then
+    echo "Timer:"
+    echo "------------------------------------------------------------"
+    grep '^OnCalendar=' "$timer" \
+        | sed 's/^/Scheduled:    /'
+    echo "------------------------------------------------------------"
+    echo
+  fi
+
+  if [ -f "$job" ]
+  then
+    echo "Script:"
+    echo "------------------------------------------------------------"
+    cat "$job"
+    echo "------------------------------------------------------------"
+  fi
+
+  echo ''
+  echo "Journal:"
+  echo "------------------------------------------------------------"
+  journalctl -u "sat-run@${id}.service" --no-pager -n 20 || true
+  echo "------------------------------------------------------------"
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+
+  -f|--failed)
+    list_failed
+    ;;
+
+  "")
+    list_jobs
+    ;;
+
+  ''|*[!0-9]*)
+    echo "satq: invalid argument: $1" >&2
+    usage >&2
+    exit 2
+    ;;
+
+  *)
+    show_job "$1"
+    ;;
+esac
