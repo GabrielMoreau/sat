@@ -14,11 +14,11 @@ JOBDIR=/var/lib/sat/job
 SYSTEMDDIR=/etc/systemd/system
 JOB_SHELL=/bin/sh
 
-OPT_SHORT=bh
-OPT_LONG=bash,help
+OPT_SHORT=bzh
+OPT_LONG=bash,zsh,help
 if ! OPT_PARSED=$(getopt --options "${OPT_SHORT}" --longoptions "${OPT_LONG}" --name "$0" -- "$@")
 then
-  echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
+  echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
   exit 1
 fi
 eval set -- "${OPT_PARSED}"
@@ -31,8 +31,12 @@ do
       JOB_SHELL=/bin/bash
       shift
       ;;
+    -z|--zsh)
+      JOB_SHELL=/bin/zsh
+      shift
+      ;;
     -h|--help)
-      echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM"
+      echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM"
       exit 0
       ;;
     --)
@@ -40,7 +44,7 @@ do
       break
       ;;
     *)
-      echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
+      echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
       exit 1
       ;;
   esac
@@ -48,7 +52,7 @@ done
 
 if [ $# -ne 2 ]
 then
-  echo "Usage: sat [--bash|-b] YYYY-MM-DD HH:MM" >&2
+  echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
   exit 1
 fi
 DATE="$1 $2"
