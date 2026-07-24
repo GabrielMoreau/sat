@@ -1,0 +1,82 @@
+=head1 NAME
+
+satq - list scheduled SAT jobs
+
+=head1 SYNOPSIS
+
+ satq
+
+=head1 DESCRIPTION
+
+SAT was designed as a lightweight system administration tool providing an B<at>-like interface with systemd persistence.
+
+B<satq> displays the list of jobs scheduled by B<sat>.
+
+For each job, it shows:
+
+=over 4
+
+=item * the job identifier;
+
+=item * the next scheduled execution time;
+
+=item * the current state;
+
+=item * the command to be executed.
+
+=back
+
+Jobs are managed by systemd timers and are persistent across system reboots.
+
+
+=head1 EXAMPLES
+
+List scheduled jobs:
+
+ satq
+
+
+Example output:
+
+ ID       NEXT RUN                   STATE     COMMAND
+ 000042   2026-08-31 23:59           waiting   usermgmt to-staff --employer DoD --job Programmer toto
+ 000043   2026-09-01 08:00           failed    backup --full
+
+
+=head1 EXIT STATUS
+
+B<satq> returns:
+
+=over 4
+
+=item 0 Successful completion.
+
+=item 1 An error occurred.
+
+=back
+
+
+=head1 FILES
+
+ /var/lib/sat/job/
+
+ /etc/systemd/system/sat-*.timer
+
+
+=head1 SEE ALSO
+
+L<sat(1)>,
+L<satrm(1)>,
+L<systemd.timer(5)>
+
+
+=head1 AUTHORS
+
+Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
+
+
+=head1 LICENSE AND COPYRIGHT
+
+License GNU GPL version 2 or later and Perl equivalent
+
+ Copyright (C) 2026, LEGI UMR 5519 / CNRS UGA G-INP, Grenoble, France

@@ -1,0 +1,126 @@
+=head1 NAME
+
+sat-run - execute an internal SAT scheduled job
+
+=head1 SYNOPSIS
+
+ /usr/libexec/sat/sat-run JOB_ID
+
+=head1 DESCRIPTION
+
+SAT was designed as a lightweight system administration tool providing an B<at>-like interface with systemd persistence.
+
+B<sat-run> is an internal component of SAT.
+It is invoked by the systemd template service B<sat-run@.service> when a scheduled SAT job reaches its execution time.
+Administrators normally do not call B<sat-run> directly.
+Jobs should be created with B<sat> and managed with B<satq> and B<satrm>.
+B<sat-run> executes the job script associated with the specified job identifier.
+
+
+=head1 JOB EXECUTION
+
+The job script is expected to be stored as:
+
+ /var/lib/sat/job/JOB_ID.sh
+
+The script is executed as a standalone shell program.
+The exit status of the job script determines the final state of the SAT job.
+
+=head1 SUCCESSFUL EXECUTION
+
+If the job exits with status 0:
+
+=over 4
+
+=item * the associated systemd timer is disabled;
+
+=item * the timer unit is removed;
+
+=item * the job script is removed;
+
+=item * the systemd manager configuration is reloaded.
+
+=back
+
+
+The job is considered completed and no further action is required.
+
+=head1 FAILED EXECUTION
+
+If the job exits with a non-zero status:
+
+=over 4
+
+=item * the associated systemd timer is disabled;
+
+=item *
+
+the job script is kept;
+
+=item * a failure status file is created;
+
+=item * no automatic retry is scheduled.
+
+=back
+
+Failed jobs remain available for administrator inspection and manual action.
+
+
+=head1 EXIT STATUS
+
+B<sat-run> returns the exit status of the executed job.
+
+Special errors may return:
+
+=over 4
+
+=item 127 The requested job script does not exist or cannot be executed.
+
+=back
+
+
+=head1 FILES
+
+Job scripts:
+
+ /var/lib/sat/job/*.sh
+
+Job status files:
+
+ /var/lib/sat/job/*.status
+
+Systemd timers:
+
+ /etc/systemd/system/sat-*.timer
+
+Systemd template service:
+
+ /usr/lib/systemd/system/sat-run@.service
+
+
+=head1 SECURITY
+
+B<sat-run> is intended to be executed by systemd as part of the SAT scheduler.
+Direct execution by users is not recommended.
+The permissions of the job directory and generated scripts must prevent unauthorized modification of scheduled administrative commands.
+
+
+=head1 SEE ALSO
+
+L<sat(1)>,
+L<satq(1)>,
+L<satrm(1)>,
+L<systemd.service(5)>,
+L<systemd.timer(5)>
+
+
+=head1 AUTHORS
+
+Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
+
+
+=head1 LICENSE AND COPYRIGHT
+
+License GNU GPL version 2 or later and Perl equivalent
+
+ Copyright (C) 2026, LEGI UMR 5519 / CNRS UGA G-INP, Grenoble, France

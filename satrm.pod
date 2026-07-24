@@ -1,0 +1,75 @@
+=head1 NAME
+
+satrm - remove scheduled SAT jobs
+
+=head1 SYNOPSIS
+
+ satrm JOB_ID [JOB_ID ...]
+
+=head1 DESCRIPTION
+
+SAT was designed as a lightweight system administration tool providing an B<at>-like interface with systemd persistence.
+
+B<satrm> removes one or more jobs scheduled by B<sat>.
+The associated systemd timer is stopped and disabled.
+The job script and any stored execution status are removed.
+Removing a job is immediate and does not require confirmation.
+
+=head1 EXAMPLES
+
+Remove one job:
+
+ satrm 42
+
+Remove several jobs:
+
+  satrm 42 43 44
+
+Example output:
+
+  remove job 000042
+  remove job 000043
+
+=head1 NOTES
+
+B<satrm> can be used at any time after scheduling a job.
+
+It is intended for situations where an administrator notices an error shortly after creating a scheduled command.
+
+=head1 EXIT STATUS
+
+B<satrm> returns:
+
+=over 4
+
+=item 0 All specified jobs were removed successfully.
+
+=item 1 An error occurred.
+
+=back
+
+
+=head1 FILES
+
+ /var/lib/sat/job/
+
+ /etc/systemd/system/sat-*.timer
+
+
+=head1 SEE ALSO
+
+L<sat(1)>,
+L<satq(1)>,
+L<systemd.timer(5)>
+
+
+=head1 AUTHORS
+
+Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
+
+
+=head1 LICENSE AND COPYRIGHT
+
+License GNU GPL version 2 or later and Perl equivalent
+
+ Copyright (C) 2026, LEGI UMR 5519 / CNRS UGA G-INP, Grenoble, France
