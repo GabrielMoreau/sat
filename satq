@@ -28,21 +28,23 @@ normalize_id() {
 }
 
 get_command() {
-  local id="$1"
-  local file="${JOBDIR}/$id.sh"
+  local id file 
+  id="$1"
+  file="${JOBDIR}/$id.sh"
 
   if [ ! -f "${file}" ]
   then
-    echo "-"
+    echo '-'
     return
   fi
 
   # Ignore boilerplate
-  grep -vE '^(#!/|set )' "${file}" | head -1
+  grep -vE '^(#!/|set )' "${file}" | head -1 || echo '-'
 }
 
 get_state() {
-  local id="$1"
+  local id
+  id="$1"
 
   if [ -f "${JOBDIR}/${id}.status" ]
   then
@@ -66,17 +68,11 @@ list_jobs() {
   do
     [ -e "$timer" ] || continue
 
-    local id
+    local id next state cmd
     id=$(basename "$timer" .timer)
     id=${id#sat-}
-
-    local next
-    next=$(systemctl show "${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo "-")
-
-    local state
+    next=$(systemctl show "${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
     state=$(get_state "${id}")
-
-    local cmd
     cmd=$(get_command "${id}")
 
     printf "%-8s %-25s %-10s %s\n" "${id}" "$next" "$state" "$cmd"
@@ -90,18 +86,13 @@ list_failed() {
   do
     [ -e "$status" ] || continue
 
-    local id
+    local id last_run exitcode cmd
     id=$(basename "$status" .status)
-
-    local date
-    date=$(grep '^date_end=' "$status" | cut -d= -f2-)
-
-    local exitcode
-    exitcode=$(grep '^exit=' "$status" | cut -d= -f2)
-
-    local cmd
+    last_run=$(grep '^date_end=' "$status" | cut -d= -f2- || echo '-')
+    exitcode=$(grep '^exit=' "$status" | cut -d= -f2  || echo '-')
     cmd=$(get_command "${id}")
-    printf "%-8s %-25s %-8s %s\n" "${id}" "$date" "$exitcode" "$cmd"
+
+    printf "%-8s %-25s %-8s %s\n" "${id}" "$last_run" "$exitcode" "$cmd"
   done
 }
 
@@ -109,42 +100,42 @@ show_job() {
   local id
   id=$(normalize_id "$1")
 
-  local job="${JOBDIR}/${id}.sh"
-  local status="${JOBDIR}/${id}.status"
-  local timer="${SYSTEMDDIR}/sat-${id}.timer"
+  local jobfile statusfile timerfile
+  jobfile="${JOBDIR}/${id}.sh"
+  statusfile="${JOBDIR}/${id}.status"
+  timerfile="${SYSTEMDDIR}/sat-${id}.timer"
 
-  if [ ! -f "$job" ] && [ ! -f "$timer" ]
+  if [ ! -f "${jobfile}" ] && [ ! -f "${timerfile}" ]
   then
     echo "satq: job ${id} not found" >&2
     exit 1
   fi
 
   echo "Job ID:       ${id}"
-  if [ -f "$status" ]
+  if [ -f "${statusfile}" ]
   then
     echo "State:        failed"
-    grep '^exit=' "$status"     | sed 's/^/Exit status:  /'
-    grep '^date_end=' "$status" | sed 's/^/Last run:     /'
+    grep '^exit=' "${statusfile}"     | sed 's/^/Exit status:  /' || true
+    grep '^date_end=' "${statusfile}" | sed 's/^/Last run:     /' || true
   else
     echo "State:        waiting"
   fi
 
   echo ''
-  if [ -f "$timer" ]
+  if [ -f "${timerfile}" ]
   then
     echo "Timer:"
     echo "------------------------------------------------------------"
-    grep '^OnCalendar=' "$timer" \
-        | sed 's/^/Scheduled:    /'
+    grep '^OnCalendar=' "${timerfile}" | sed 's/^/Scheduled:    /' || true
     echo "------------------------------------------------------------"
     echo
   fi
 
-  if [ -f "$job" ]
+  if [ -f "${jobfile}" ]
   then
     echo "Script:"
     echo "------------------------------------------------------------"
-    cat "$job"
+    cat "${jobfile}"
     echo "------------------------------------------------------------"
   fi
 
