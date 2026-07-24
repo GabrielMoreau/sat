@@ -150,5 +150,17 @@ L<systemd.timer(5)>,
 L<systemd.service(5)>,
 L<journalctl(1)>
 
+Note: The master Git repository in on the L<GRICAD Gitlab|https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat>.
+Other Git repository are mirror or fork.
 
-=head1 AUTHOR
+
+=head1 AUTHORS
+
+Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
+
+
+=head1 LICENSE AND COPYRIGHT
+
+License GNU GPL version 2 or later and Perl equivalent
+
+ Copyright (C) 2026, LEGI UMR 5519 / CNRS UGA G-INP, Grenoble, France
