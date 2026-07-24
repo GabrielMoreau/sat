@@ -28,7 +28,7 @@ mkdir -p "${tmp_folder}/usr/lib/systemd/system"
 pod2man --section=1 --release="SAT" sat.pod     | gzip > "${tmp_folder}/usr/share/man/man1/sat.1.gz"
 pod2man --section=1 --release="SAT" satq.pod    | gzip > "${tmp_folder}/usr/share/man/man1/satq.1.gz"
 pod2man --section=1 --release="SAT" satrm.pod   | gzip > "${tmp_folder}/usr/share/man/man1/satrm.1.gz"
-pod2man --section=8 --release="SAT" sat-run.pod | gzip > "${tmp_folder}/usr/share/man/man8/satrm.1.gz"
+pod2man --section=8 --release="SAT" sat-run.pod | gzip > "${tmp_folder}/usr/share/man/man8/sat-run.8.gz"
 
 # Copy files
 cp sat satq satrm       "${tmp_folder}/usr/bin/"
