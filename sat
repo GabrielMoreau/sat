@@ -78,14 +78,12 @@ then
   echo "sat: shell not found: ${JOB_SHELL}" >&2
   exit 1
 fi
-# Check date syntax with systemd
-if ! systemd-analyze calendar "${DATE_ASKED}" >/dev/null 2>&1
+# Check date syntax and date in the future
+if ! DATE_TARGET=$(date -d "${DATE_ASKED}" +%s 2>/dev/null)
 then
   echo "sat: invalid date expression: ${DATE_ASKED}" >&2
   exit 1
 fi
-# Check date in the future
-DATE_TARGET=$(date -d "${DATE_ASKED}" +%s)
 DATE_NOW=$(date +%s)
 if [ "${DATE_TARGET}" -le "${DATE_NOW}" ]
 then
