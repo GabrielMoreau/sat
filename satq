@@ -43,14 +43,9 @@ get_command() {
 }
 
 get_state() {
-  local id
+  local id statusfile state
   id="$1"
-
-  if [ -f "${JOBDIR}/${id}.status" ]
-  then
-    echo "failed"
-    return
-  fi
+  statusfile="${JOBDIR}/${id}.status"
 
   if systemctl is-active --quiet "sat-run@${id}.service"
   then
@@ -58,7 +53,22 @@ get_state() {
     return
   fi
 
-  echo "waiting"
+  if [ -f "${statusfile}" ]
+  then
+    state=$(sed -n 's/^state=//p' "${statusfile}")
+
+    case "${state:-}" in
+      failed)
+        echo 'failed'
+        ;;
+      *)
+        echo "unknown(${state:-empty})"
+        ;;
+    esac
+    return
+  fi
+
+  echo 'waiting'
 }
 
 list_jobs() {
