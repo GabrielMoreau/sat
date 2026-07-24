@@ -15,7 +15,7 @@ GIT_COUNT=$(git rev-list --count "${GIT_LAST_TAG}..HEAD")
 
 # Set Name and Version
 PKG_NAME=sat
-CODE_VERSION=${GIT_LAST_TAG}.${GIT_COUNT}
+CODE_VERSION=$(./get-version)
 PKG_VERSION=1
 
 # Create future tree

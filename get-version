@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+GIT_LAST_TAG=$(git describe --tags --abbrev=0)
+GIT_COUNT=$(git rev-list --count "${GIT_LAST_TAG}..HEAD")
+
+echo "${GIT_LAST_TAG}.${GIT_COUNT}"
