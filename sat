@@ -58,7 +58,7 @@ TIMER="${SYSTEMDDIR}/sat-${JOBID}.timer"
 
 # Read script from stdin
 cat > "${JOBFILE}" <<EOF
-#!/bin/bash
+#!/bin/sh
 set -e
 
 $(cat)
