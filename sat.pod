@@ -1,0 +1,154 @@
+=head1 NAME
+
+sat - schedule a one-shot command using systemd timers
+
+
+=head1 SYNOPSIS
+
+ echo "bash command" | sat DATE TIME
+
+
+=head1 DESCRIPTION
+
+B<sat> is a simple replacement for B<at> designed for Linux systems using systemd with persistence (reboot).
+It schedules a command or shell script for a single execution at a specified date and time.
+Unlike traditional B<at>, scheduled jobs are stored as persistent systemd timers and survive system reboots.
+The command is read from standard input and stored as an executable shell script.
+The command is then executed once by systemd.
+After successful execution, the job is automatically removed.
+If the command exits with a non-zero status, the job is kept for inspection and manual action.
+Failed jobs are disabled and are not automatically retried.
+
+=head1 EXAMPLES
+
+Schedule a command:
+
+ echo "usermgmt to-staff --employer DoD --job Programmer toto" | sat 2026-08-31 23:59
+
+Example output:
+
+ scheduled job 000042 at 2026-08-31 23:59
+
+List scheduled jobs:
+
+ satq
+
+Remove a scheduled job:
+
+ satrm 42
+
+
+=head1 STORAGE
+
+Jobs are stored below:
+
+ /var/lib/sat/job/
+
+Each job is stored as an executable Bash shell script:
+
+ /var/lib/sat/job/000042.sh
+
+
+Generated systemd timer units are stored below:
+
+ /etc/systemd/system/
+
+with names:
+
+ sat-000042.timer
+
+
+=head1 EXECUTION MODEL
+
+Each job is executed through the systemd template service:
+
+ sat-run@.service
+
+
+The service runs:
+
+ /usr/libexec/sat/sat-run JOB_ID
+
+
+Systemd provides:
+
+=over 4
+
+=item * persistence across system reboots;
+
+=item * execution tracking;
+
+=item * journal logging;
+
+=item * integration with standard system administration tools.
+
+=back
+
+
+=head1 JOB LIFECYCLE
+
+A scheduled job follows this lifecycle:
+
+ waiting -> running +-> removed
+                    |
+                    +-> failed
+
+Successful jobs are automatically removed.
+Failed jobs remain available for inspection and manual removal.
+
+
+=head1 FAILURE HANDLING
+
+If a job exits successfully:
+
+=over 4
+
+=item * the timer is disabled;
+
+=item * the timer unit is removed;
+
+=item * the job script is removed.
+
+=back
+
+If a job exits with an error:
+
+=over 4
+
+=item * the timer is disabled;
+
+=item * the job script is kept;
+
+=item * the failure state is recorded;
+
+=item * no automatic retry is performed.
+
+=back
+
+The administrator must decide whether to inspect, remove, or manually run the failed job.
+
+=head1 FILES
+
+ /usr/bin/sat
+ /usr/bin/satq
+ /usr/bin/satrm
+
+ /usr/libexec/sat/sat-run
+
+ /usr/lib/systemd/system/sat-run@.service
+
+ /var/lib/sat/job/
+
+ /etc/systemd/system/sat-*.timer
+
+
+=head1 SEE ALSO
+
+L<satq(1)>,
+L<satrm(1)>,
+L<systemd.timer(5)>,
+L<systemd.service(5)>,
+L<journalctl(1)>
+
+
+=head1 AUTHOR
