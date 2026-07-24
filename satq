@@ -165,11 +165,11 @@ case "${1:-}" in
     list_failed
     ;;
 
-  "")
+  '')
     list_jobs
     ;;
 
-  ''|*[!0-9]*)
+  *[!0-9]*)
     echo "satq: invalid argument: $1" >&2
     usage >&2
     exit 2
