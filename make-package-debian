@@ -11,7 +11,7 @@ tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
 [ -n "${tmp_folder}" -a -d "${tmp_folder}" ] || exit 1
 
 GIT_LAST_TAG=$(git describe --tags --abbrev=0)
-GIT_COUNT=$(git rev-list --count "${LAST_TAG}..HEAD")
+GIT_COUNT=$(git rev-list --count "${GIT_LAST_TAG}..HEAD")
 
 # Set Name and Version
 PKG_NAME=sat
