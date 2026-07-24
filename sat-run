@@ -53,8 +53,8 @@ failure_cleanup() {
     cat > "${STATUSFILE}" <<EOF
 state=failed
 exit=130
-start=${STARTTIME}
-end=$(date -Is)
+date_start=${STARTTIME}
+date_end=$(date -Is)
 reason=interrupted
 EOF
   fi
@@ -81,8 +81,8 @@ fi
 cat > "${STATUSFILE}" <<EOF
 state=failed
 exit=${RETURNCODE}
-start=${STARTTIME}
-end=${ENDTIME}
+date_start=${STARTTIME}
+date_end=${ENDTIME}
 EOF
 
 # Disable timer to avoid automatic rerun

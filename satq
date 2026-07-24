@@ -94,7 +94,7 @@ list_failed() {
     id=$(basename "$status" .status)
 
     local date
-    date=$(grep '^date=' "$status" | cut -d= -f2-)
+    date=$(grep '^date_end=' "$status" | cut -d= -f2-)
 
     local exitcode
     exitcode=$(grep '^exit=' "$status" | cut -d= -f2)
@@ -123,8 +123,8 @@ show_job() {
   if [ -f "$status" ]
   then
     echo "State:        failed"
-    grep '^exit=' "$status" | sed 's/^/Exit status:  /'
-    grep '^date=' "$status" | sed 's/^/Last run:     /'
+    grep '^exit=' "$status"     | sed 's/^/Exit status:  /'
+    grep '^date_end=' "$status" | sed 's/^/Last run:     /'
   else
     echo "State:        waiting"
   fi
