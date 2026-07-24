@@ -12,7 +12,7 @@ tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
 
 # Set Name and Version
 PKG_NAME=sat
-CODE_VERSION=0.1.0
+CODE_VERSION=0.1.1
 PKG_VERSION=1
 
 # Create future tree
@@ -21,6 +21,7 @@ mkdir -p ${tmp_folder}/usr/libexec/sat
 mkdir -p ${tmp_folder}/usr/share/man/man1
 mkdir -p ${tmp_folder}/usr/share/man/man8
 mkdir -p ${tmp_folder}/usr/share/sat
+mkdir -p ${tmp_folder}/usr/lib/systemd/system
 #mkdir -p ${tmp_folder}/etc/bash_completion.d
 
 # Create manuals
@@ -32,6 +33,7 @@ pod2man --section=8 --release="SAT" sat-run.pod | gzip > ${tmp_folder}/usr/share
 # Copy files
 cp sat satq satrm       ${tmp_folder}/usr/bin/
 cp sat-run              ${tmp_folder}/usr/libexec/sat/
+cp sat-run@.service     ${tmp_folder}/usr/lib/systemd/system/
 cp LICENSE.md           ${tmp_folder}/usr/share/sat/
 #cp sat.bash_completion  ${tmp_folder}/etc/bash_completion.d/
 
@@ -45,7 +47,7 @@ rm -f ${tmp_folder}/data.tar.gz
 (cd ${tmp_folder}; tar --owner root --group root -czf data.tar.gz ./usr)
 
 # Control file
-cat <<END > ${tmp_folder}/control
+cat <<END > "${tmp_folder}/control"
 Package: ${PKG_NAME}
 Version: ${CODE_VERSION}-${PKG_VERSION}
 Section: utils
@@ -62,9 +64,18 @@ Description: Simple At Scheduler
 Homepage: https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat
 END
 
+# Post install and post remove
+cat <<END > "${tmp_folder}/postinst"
+#!/bin/sh
+
+/usr/bin/systemctl daemon-reload
+END
+cp "${tmp_folder}/postinst" "${tmp_folder}/postrm"
+chmod a+rx,go-w "${tmp_folder}/postinst" "${tmp_folder}/postrm"
+
 # Control archive
 rm -f ${tmp_folder}/control.tar.gz
-(cd ${tmp_folder}; tar --owner root --group root -czf control.tar.gz control)
+(cd ${tmp_folder}; tar --owner root --group root -czf control.tar.gz control postinst postrm)
 
 # Format deb package
 echo 2.0 > ${tmp_folder}/debian-binary
@@ -77,5 +88,5 @@ rm -rf ${tmp_folder}
 
 # Prepare reprepro upload
 echo "# Prepare reprepro upload"
-echo "( cd /srv/www/debian/ ; reprepro includedeb trixie   ~/wheezy/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
+echo "( cd /srv/www/debian/ ; reprepro includedeb trixie   ~/trixie/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
 echo "( cd /srv/www/debian/ ; reprepro dumpreferences ) | grep -i sat"
