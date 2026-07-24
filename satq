@@ -68,35 +68,35 @@ list_jobs() {
   do
     [ -e "$timer" ] || continue
 
-    local id next state cmd
+    local id next_run state cmd
     id=$(basename "$timer" .timer)
     id=${id#sat-}
-    next=$(systemctl show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
-    if [ "${next}" != "-" ] && [ -n "${next}" ]
+    next_run=$(systemctl show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
+    if [ "${next_run}" != "-" ] && [ -n "${next_run}" ]
     then
-      next=$(date -d "${next}" "+%F %H:%M")
+      next_run=$(date -d "${next_run}" "+%F %H:%M")
     fi
     state=$(get_state "${id}")
     cmd=$(get_command "${id}")
 
-    printf "%-8s %-18s %-10s %s\n" "${id}" "$next" "$state" "$cmd"
+    printf "%-8s %-18s %-10s %s\n" "${id}" "${next_run}" "${state}" "${cmd}"
   done
 }
 
 list_failed() {
   printf "%-8s %-18s %-8s %s\n" "ID" "LAST RUN" "EXIT" "COMMAND"
 
-  for status in "${JOBDIR}"/*.status
+  for statusfile in "${JOBDIR}"/*.status
   do
-    [ -e "$status" ] || continue
+    [ -e "$statusfile" ] || continue
 
     local id last_run exitcode cmd
-    id=$(basename "$status" .status)
-    last_run=$(grep '^date_end=' "$status" | cut -d= -f2- || echo '-')
-    exitcode=$(grep '^exit=' "$status" | cut -d= -f2  || echo '-')
+    id=$(basename "${statusfile}" .status)
+    last_run=$(grep '^date_end=' "${statusfile}" | cut -d= -f2- || echo '-')
+    exitcode=$(grep '^exit=' "${statusfile}" | cut -d= -f2  || echo '-')
     cmd=$(get_command "${id}")
 
-    printf "%-8s %-18s %-8s %s\n" "${id}" "$last_run" "$exitcode" "$cmd"
+    printf "%-8s %-18s %-8s %s\n" "${id}" "${last_run}" "${exitcode}" "${cmd}"
   done
 }
 
