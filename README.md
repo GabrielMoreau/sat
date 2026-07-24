@@ -1,6 +1,6 @@
 # sat
 
-
+sat - schedule a one-shot command using systemd timers
 
 ## Getting started
 
