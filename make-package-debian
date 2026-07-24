@@ -33,16 +33,13 @@ PKG_VERSION=1
 }
 
 # Install files
-install -Dm 0755 -t "${tmp_folder}"/usr/bin/                sat
-install -Dm 0755 -t "${tmp_folder}"/usr/bin/                satq
-install -Dm 0755 -t "${tmp_folder}"/usr/bin/                satrm
+install -Dm 0755 -t "${tmp_folder}"/usr/bin/                sat satq satrm
 install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        sat-run
 install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/system/ sat-run@.service
 install -Dm 0644 -t "${tmp_folder}"/usr/share/sat/          LICENSE.md
 
 # Create manuals
-mkdir -p "${tmp_folder}"/usr/share/man/man1
-mkdir -p "${tmp_folder}"/usr/share/man/man8
+mkdir -p "${tmp_folder}"/usr/share/man/{man1,man8}
 pod2man --section=1 --release="SAT" sat.pod     | gzip > "${tmp_folder}"/usr/share/man/man1/sat.1.gz
 pod2man --section=1 --release="SAT" satq.pod    | gzip > "${tmp_folder}"/usr/share/man/man1/satq.1.gz
 pod2man --section=1 --release="SAT" satrm.pod   | gzip > "${tmp_folder}"/usr/share/man/man1/satrm.1.gz
@@ -63,7 +60,7 @@ Tag: implemented-in::bash, interface::commandline, role::program
 Priority: optional
 Depends: bash, systemd, coreutils, sed, grep
 Architecture: all
-Installed-Size: $(du -ks "${tmp_folder}/usr"|cut -f 1)
+Installed-Size: $(du -ks "${tmp_folder}/usr" | cut -f 1)
 Maintainer: Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 Description: Simple At Scheduler
  SAT is a lightweight one-shot job scheduler for Linux systems using
@@ -83,7 +80,6 @@ cp "${tmp_folder}"/postinst "${tmp_folder}"/postrm
 chmod a+rx,go-w "${tmp_folder}"/postinst "${tmp_folder}"/postrm
 
 # Control archive
-rm -f "${tmp_folder}"/control.tar.gz
 (cd "${tmp_folder}" || exit 1; tar --owner root --group root -czf control.tar.gz control postinst postrm)
 
 # Format deb package
