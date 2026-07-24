@@ -139,5 +139,8 @@ systemctl daemon-reload
 systemctl enable --now "sat-${JOBID}.timer"
 
 echo -n "scheduled job ${JOBID} at ${DATE_HMS}"
-[ "${DATE_HMS}" != "${DATE_ASKED}" ] && echo -n " (${DATE_ASKED})"
+if [ "${DATE_HMS}" != "${DATE_ASKED}" ] && [ "${DATE_HMS%:00}" != "${DATE_ASKED}"  ] 
+then
+  echo -n " (${DATE_ASKED})"
+fi
 echo ''
