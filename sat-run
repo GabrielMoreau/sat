@@ -4,6 +4,8 @@
 # Description: execute a SAT job
 #
 # 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+#
+# shellcheck disable=SC2317
 
 set -u
 
@@ -18,7 +20,6 @@ SYSTEMDDIR="/etc/systemd/system"
 JOBFILE="${JOBDIR}/${JOBID}.sh"
 STATUSFILE="${JOBDIR}/${JOBID}.status"
 SYSTEMDTIMER="sat-${JOBID}.timer"
-SYSTEMDSERVICE="sat-run@${JOBID}.service"
 
 usage() {
   echo "Usage: sat-run JOB_ID" >&2
