@@ -39,7 +39,7 @@ get_command() {
   fi
 
   # Ignore boilerplate
-  grep -vE '^(#!/|set )' "${file}" | head -1 || echo '-'
+  grep -vE '^(#!/|set |\s*$)' "${file}" | head -1 || echo '-'
 }
 
 get_state() {
@@ -62,7 +62,7 @@ get_state() {
 }
 
 list_jobs() {
-  printf "%-8s %-25s %-10s %s\n" "ID" "NEXT RUN" "STATE" "COMMAND"
+  printf "%-8s %-18s %-10s %s\n" "ID" "NEXT RUN" "STATE" "COMMAND"
 
   for timer in "${SYSTEMDDIR}"/sat-*.timer
   do
@@ -72,15 +72,19 @@ list_jobs() {
     id=$(basename "$timer" .timer)
     id=${id#sat-}
     next=$(systemctl show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
+    if [ "${next}" != "-" ] && [ -n "${next}" ]
+    then
+      next=$(date -d "${next}" "+%F %H:%M")
+    fi
     state=$(get_state "${id}")
     cmd=$(get_command "${id}")
 
-    printf "%-8s %-25s %-10s %s\n" "${id}" "$next" "$state" "$cmd"
+    printf "%-8s %-18s %-10s %s\n" "${id}" "$next" "$state" "$cmd"
   done
 }
 
 list_failed() {
-  printf "%-8s %-25s %-8s %s\n" "ID" "LAST RUN" "EXIT" "COMMAND"
+  printf "%-8s %-18s %-8s %s\n" "ID" "LAST RUN" "EXIT" "COMMAND"
 
   for status in "${JOBDIR}"/*.status
   do
@@ -92,7 +96,7 @@ list_failed() {
     exitcode=$(grep '^exit=' "$status" | cut -d= -f2  || echo '-')
     cmd=$(get_command "${id}")
 
-    printf "%-8s %-25s %-8s %s\n" "${id}" "$last_run" "$exitcode" "$cmd"
+    printf "%-8s %-18s %-8s %s\n" "${id}" "$last_run" "$exitcode" "$cmd"
   done
 }
 
