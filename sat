@@ -14,12 +14,28 @@ JOBDIR=/var/lib/sat/job
 SYSTEMDDIR=/etc/systemd/system
 JOB_SHELL=/bin/sh
 
+exit_usage() {
+  local exit_code
+  exit_code=${1:-0}
+
+  cat <<EOF
+Usage: sat [--bash|-b] [--zsh|-z] DATE TIME
+
+Examples:
+  echo "my_command" | sat 2026-08-21 12:30
+  echo "my_command" | sat now +5min
+  echo "my_command" | sat today 18:00
+  echo "my_command" | sat tomorrow 09:30
+EOF
+
+  exit "${exit_code}"
+}
+
 OPT_SHORT=bzh
 OPT_LONG=bash,zsh,help
 if ! OPT_PARSED=$(getopt --options "${OPT_SHORT}" --longoptions "${OPT_LONG}" --name "$0" -- "$@")
 then
-  echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
-  exit 1
+  exit_usage 1 >&2
 fi
 eval set -- "${OPT_PARSED}"
 
@@ -36,26 +52,23 @@ do
       shift
       ;;
     -h|--help)
-      echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM"
-      exit 0
+      exit_usage 0
       ;;
     --)
       shift
       break
       ;;
     *)
-      echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
-      exit 1
+      exit_usage 1 >&2
       ;;
   esac
 done
 
 if [ $# -ne 2 ]
 then
-  echo "Usage: sat [--bash|-b] [--zsh|-z] YYYY-MM-DD HH:MM" >&2
-  exit 1
+  exit_usage 1 >&2
 fi
-DATE="$1 $2"
+DATE_ASKED="$1 $2"
 
 mkdir -p "${JOBDIR}"
 
@@ -66,17 +79,17 @@ then
   exit 1
 fi
 # Check date syntax with systemd
-if ! systemd-analyze calendar "${DATE}" >/dev/null 2>&1
+if ! systemd-analyze calendar "${DATE_ASKED}" >/dev/null 2>&1
 then
-  echo "sat: invalid date expression: ${DATE}" >&2
+  echo "sat: invalid date expression: ${DATE_ASKED}" >&2
   exit 1
 fi
 # Check date in the future
-DATE_TARGET=$(date -d "${DATE}" +%s)
+DATE_TARGET=$(date -d "${DATE_ASKED}" +%s)
 DATE_NOW=$(date +%s)
 if [ "${DATE_TARGET}" -le "${DATE_NOW}" ]
 then
-  echo "sat: date must be in the future: ${DATE}" >&2
+  echo "sat: date must be in the future: ${DATE_ASKED}" >&2
   exit 1
 fi
 
@@ -89,7 +102,7 @@ IDFILE=/var/lib/sat/nextid
 
 if [ -f "${IDFILE}" ]
 then
-  ID=$(cat "${IDFILE}")
+  read -r ID < "${IDFILE}"
 else
   ID=1
 fi
@@ -110,12 +123,13 @@ TIMERFILE="${SYSTEMDDIR}/sat-${JOBID}.timer"
 } > "${JOBFILE}"
 chmod 0700 "${JOBFILE}"
 
+DATE_HMS=$(date -d "@${DATE_TARGET}" '+%Y-%m-%d %H:%M:%S')
 cat > "${TIMERFILE}" <<EOF
 [Unit]
 Description=SAT job ${JOBID}
 
 [Timer]
-OnCalendar=$DATE
+OnCalendar=${DATE_HMS}
 Persistent=true
 Unit=sat-run@${JOBID}.service
 
@@ -126,4 +140,6 @@ EOF
 systemctl daemon-reload
 systemctl enable --now "sat-${JOBID}.timer"
 
-echo "scheduled job ${JOBID} at $DATE"
+echo -n "scheduled job ${JOBID} at ${DATE_HMS}"
+[ "${DATE_HMS}" != "${DATE_ASKED}" ] && echo -n " (${DATE_ASKED})"
+echo ''
