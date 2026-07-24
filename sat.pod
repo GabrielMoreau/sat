@@ -10,6 +10,8 @@ sat - schedule a one-shot command using systemd timers
 
 =head1 DESCRIPTION
 
+SAT was designed as a lightweight system administration tool providing an B<at>-like interface with systemd persistence.
+
 B<sat> is a simple replacement for B<at> designed for Linux systems using systemd with persistence (reboot).
 It schedules a command or shell script for a single execution at a specified date and time.
 Unlike traditional B<at>, scheduled jobs are stored as persistent systemd timers and survive system reboots.
