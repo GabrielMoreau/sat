@@ -9,7 +9,8 @@ set -u
 
 JOBID="${1:-}"
 
-LANG=C
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export LANG=C
 
 JOBDIR="/var/lib/sat/job"
 SYSTEMDDIR="/etc/systemd/system"
