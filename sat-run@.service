@@ -1,0 +1,6 @@
+[Unit]
+Description=SAT one-shot job %i
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/sat/sat-run %i
