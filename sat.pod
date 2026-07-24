@@ -21,6 +21,62 @@ After successful execution, the job is automatically removed.
 If the command exits with a non-zero status, the job is kept for inspection and manual action.
 Failed jobs are disabled and are not automatically retried.
 
+
+=head1 DATE AND TIME FORMAT
+
+The date and time argument accepts GNU date-compatible expressions.
+
+Examples:
+
+ sat now +5min
+
+Schedule a command five minutes from now.
+
+ sat today 18:00
+
+Schedule a command today at 18:00.
+
+ sat tomorrow 09:30
+
+Schedule a command tomorrow at 09:30.
+
+ sat 2026-08-31 23:59
+
+Schedule a command at an absolute date and time.
+
+The specified date must be in the future.
+Dates and times are converted internally to an absolute timestamp before creating the systemd timer unit.
+
+Seconds may be specified when required:
+
+ sat 2026-08-31 23:59:30
+
+
+=head1 SHELL EXECUTION
+
+By default, jobs are executed using B</bin/sh>.
+The shell can be selected with command line options:
+
+=over 4
+
+=item B<-b>, B<--bash> Execute the job using B</bin/bash>.
+
+=item B<-z>, B<--zsh> Execute the job using B</bin/zsh>.
+
+=back
+
+The selected shell must exist and be executable on the system.
+The command received from standard input is stored as a shell script with the following structure:
+
+ #!/bin/sh
+ set -e
+
+ command
+
+The shell option only affects execution of the generated job script.
+It does not change the shell used to invoke B<sat> itself.
+
+
 =head1 EXAMPLES
 
 Schedule a command:
@@ -29,7 +85,7 @@ Schedule a command:
 
 Example output:
 
- scheduled job 000042 at 2026-08-31 23:59
+ scheduled job 000042 at 2026-08-31 23:59:00
 
 List scheduled jobs:
 
