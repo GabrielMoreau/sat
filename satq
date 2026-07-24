@@ -71,7 +71,7 @@ list_jobs() {
     local id next state cmd
     id=$(basename "$timer" .timer)
     id=${id#sat-}
-    next=$(systemctl show "${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
+    next=$(systemctl show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
     state=$(get_state "${id}")
     cmd=$(get_command "${id}")
 
