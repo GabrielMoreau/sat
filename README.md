@@ -1,93 +1,310 @@
-# sat
+# SAT — Simple At Scheduler
 
-sat - schedule a one-shot command using systemd timers
+SAT is a lightweight one-shot job scheduler for Linux systems using systemd.
+It provides an `at`-like user interface while using persistent systemd timers internally.
 
-## Getting started
+The goal is simple:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+* schedule a command once;
+* survive machine reboots;
+* keep administration simple;
+* avoid hidden state;
+* remove completed jobs automatically;
+* leave failed jobs available for inspection.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
-## Add your files
+## Why SAT?
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+The traditional `at` command is convenient, but it has limitations on modern servers:
 
-```
-cd existing_repo
-git remote add origin https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat.git
-git branch -M main
-git push -uf origin main
-```
+* jobs may be lost if the machine is powered off;
+* there is limited visibility after scheduling;
+* integration with systemd logging and administration tools is missing.
 
-## Integrate with your tools
+SAT uses systemd timers to provide a more robust execution model.
 
-* [Set up project integrations](https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat/-/settings/integrations)
 
-## Collaborate with your team
+## Features
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+* One-shot command scheduling.
+* Persistent execution across reboots.
+* Simple shell pipeline interface.
+* No database.
+* No duplicated command metadata.
+* Automatic cleanup after successful execution.
+* Failed jobs are preserved.
+* Manual retry or removal by administrator.
+* Full integration with systemd and journald.
 
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Schedule a job
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+A command is provided through standard input:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```bash
+echo "usermgmt to-staff --employer DoD --job Programmer toto" | \
+  sat 2026-08-31 23:59
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Example:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+```
+scheduled job 000042 at 2026-08-31 23:59
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+The command is stored as an executable shell script and scheduled through a systemd timer.
+
+
+### List jobs
+
+```bash
+satq
+```
+
+Example:
+
+```
+ID       NEXT RUN                  STATE      COMMAND
+000042   2026-08-31 23:59          waiting    usermgmt to-staff --employer DoD --job Programmer toto
+000043   2026-09-01 08:00          failed     backup --full
+```
+
+
+### Remove a job
+
+If a mistake is noticed after scheduling:
+
+```bash
+satrm 42
+```
+
+The job is immediately cancelled.
+
+No confirmation is requested.
+
+
+## Job lifecycle
+
+A normal job follows this lifecycle:
+
+```
+          +---------+
+          | waiting |
+          +----+----+
+               |
+               v
+          +---------+
+          | running |
+          +----+----+
+               |
+      +--------+--------+
+      |                 |
+      v                 v
+   +---------+       +---------+
+   | removed |       | failed  |
+   +---------+       +---------+
+```
+
+### Successful execution
+
+When a job exits with status `0`:
+
+* the timer is disabled;
+* the timer unit is removed;
+* the job script is removed.
+
+The job disappears from SAT.
+
+
+### Failed execution
+
+When a job exits with a non-zero status:
+
+* the timer is disabled;
+* the job script is kept;
+* the failure state is recorded;
+* no automatic retry occurs.
+
+The administrator decides what to do next.
+
+
+## Design principles
+
+### Single source of truth
+
+SAT deliberately avoids storing job information in multiple places.
+
+The command itself is stored only once:
+
+```
+/var/lib/sat/job/000042.sh
+```
+
+The schedule is stored only in the systemd timer:
+
+```
+/etc/systemd/system/sat-000042.timer
+```
+
+There is no duplicated database or metadata file.
+
+
+### No automatic retry
+
+A failed administrative command is not automatically executed again.
+Examples:
+
+* account creation;
+* permission changes;
+* migrations;
+* maintenance scripts.
+
+An automatic retry could make a bad situation worse.
+SAT leaves the decision to the administrator.
+
+
+## Architecture
+
+```
+             user
+              |
+              |
+         +----v----+
+         |   sat   |
+         +----+----+
+              |
+              |
+    /var/lib/sat/job/000042.sh
+              |
+              |
+    /etc/systemd/system/
+         sat-000042.timer
+              |
+              |
+         systemd
+              |
+              |
+      sat-run@000042.service
+              |
+              |
+      /usr/libexec/sat/sat-run
+```
+
+
+## Installed files
+
+### Commands
+
+```
+/usr/bin/sat
+/usr/bin/satq
+/usr/bin/satrm
+```
+
+### Internal helpers
+
+```
+/usr/libexec/sat/sat-run
+```
+
+### systemd integration
+
+```
+/usr/lib/systemd/system/sat-run@.service
+```
+
+### Runtime data
+
+```
+/var/lib/sat/job/
+```
+
+### Generated timers
+
+```
+/etc/systemd/system/sat-*.timer
+```
+
+
+## Debian packaging
+
+SAT is designed to be packaged as a Debian package.
+The package should install:
+
+```
+/usr/bin/
+/usr/libexec/
+/usr/lib/systemd/system/
+/usr/share/man/
+/var/lib/sat/
+```
+
+After installation:
+
+```bash
+systemctl daemon-reload
+```
+
+is required.
+
+
+## Logging
+
+Execution output is handled by systemd journal.
+Examples:
+
+```bash
+journalctl -u sat-run@000042.service
+```
+
+or:
+
+```bash
+journalctl -xe
+```
+
+
+## Security considerations
+
+SAT is intended for system administration use.
+The following directories must be protected:
+
+```
+/var/lib/sat/job/
+/etc/systemd/system/
+```
+
+Only trusted users should be able to create or modify scheduled jobs.
+
+A modified job script is equivalent to modifying a privileged scheduled command.
+
+
+## Future improvements
+
+Possible future additions:
+
+* `satcat` — display job content;
+* `satrun` — run a job manually;
+* relative dates (`+2h`, `tomorrow 08:00`);
+* user mode using `systemd --user`;
+* shell completion;
+* Debian native integration.
+
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+To be defined.
+
+
+## Author
+
+Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
+
+
+## License and Copyright
+
+* License GNU GPL version 2 or later and Perl equivalent
+* Copyright (C) 2026, LEGI UMR 5519 / CNRS UGA G-INP, Grenoble, France
+
