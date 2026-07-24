@@ -8,10 +8,7 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
 tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
-[ -n "${tmp_folder}" -a -d "${tmp_folder}" ] || exit 1
-
-GIT_LAST_TAG=$(git describe --tags --abbrev=0)
-GIT_COUNT=$(git rev-list --count "${GIT_LAST_TAG}..HEAD")
+[ -n "${tmp_folder}" ] && [ -d "${tmp_folder}" ] || exit 1
 
 # Set Name and Version
 PKG_NAME=sat
@@ -19,35 +16,35 @@ CODE_VERSION=$(./get-version)
 PKG_VERSION=1
 
 # Create future tree
-mkdir -p ${tmp_folder}/usr/bin
-mkdir -p ${tmp_folder}/usr/libexec/sat
-mkdir -p ${tmp_folder}/usr/share/man/man1
-mkdir -p ${tmp_folder}/usr/share/man/man8
-mkdir -p ${tmp_folder}/usr/share/sat
-mkdir -p ${tmp_folder}/usr/lib/systemd/system
-#mkdir -p ${tmp_folder}/etc/bash_completion.d
+mkdir -p "${tmp_folder}/usr/bin"
+mkdir -p "${tmp_folder}/usr/libexec/sat"
+mkdir -p "${tmp_folder}/usr/share/man/man1"
+mkdir -p "${tmp_folder}/usr/share/man/man8"
+mkdir -p "${tmp_folder}/usr/share/sat"
+mkdir -p "${tmp_folder}/usr/lib/systemd/system"
+#mkdir -p "${tmp_folder}/etc/bash_completion.d"
 
 # Create manuals
-pod2man --section=1 --release="SAT" sat.pod     | gzip > ${tmp_folder}/usr/share/man/man1/sat.1.gz
-pod2man --section=1 --release="SAT" satq.pod    | gzip > ${tmp_folder}/usr/share/man/man1/satq.1.gz
-pod2man --section=1 --release="SAT" satrm.pod   | gzip > ${tmp_folder}/usr/share/man/man1/satrm.1.gz
-pod2man --section=8 --release="SAT" sat-run.pod | gzip > ${tmp_folder}/usr/share/man/man8/satrm.1.gz
+pod2man --section=1 --release="SAT" sat.pod     | gzip > "${tmp_folder}/usr/share/man/man1/sat.1.gz"
+pod2man --section=1 --release="SAT" satq.pod    | gzip > "${tmp_folder}/usr/share/man/man1/satq.1.gz"
+pod2man --section=1 --release="SAT" satrm.pod   | gzip > "${tmp_folder}/usr/share/man/man1/satrm.1.gz"
+pod2man --section=8 --release="SAT" sat-run.pod | gzip > "${tmp_folder}/usr/share/man/man8/satrm.1.gz"
 
 # Copy files
-cp sat satq satrm       ${tmp_folder}/usr/bin/
-cp sat-run              ${tmp_folder}/usr/libexec/sat/
-cp sat-run@.service     ${tmp_folder}/usr/lib/systemd/system/
-cp LICENSE.md           ${tmp_folder}/usr/share/sat/
-#cp sat.bash_completion  ${tmp_folder}/etc/bash_completion.d/
+cp sat satq satrm       "${tmp_folder}/usr/bin/"
+cp sat-run              "${tmp_folder}/usr/libexec/sat/"
+cp sat-run@.service     "${tmp_folder}/usr/lib/systemd/system/"
+cp LICENSE.md           "${tmp_folder}/usr/share/sat/"
+#cp sat.bash_completion  "${tmp_folder}/etc/bash_completion.d/"
 
 # Good right
-chmod -R a+rx        ${tmp_folder}/usr/bin/sat*
-chmod -R a+rx        ${tmp_folder}/usr/libexec/sat/sat-run
-chmod -R a+rX,go-w   ${tmp_folder}/usr
+chmod -R a+rx        "${tmp_folder}"/usr/bin/sat*
+chmod -R a+rx        "${tmp_folder}"/usr/libexec/sat/sat-run
+chmod -R a+rX,go-w   "${tmp_folder}"/usr
 
 # Data archive
-rm -f ${tmp_folder}/data.tar.gz
-(cd ${tmp_folder}; tar --owner root --group root -czf data.tar.gz ./usr)
+rm -f "${tmp_folder}/data.tar.gz"
+(cd "${tmp_folder}" || exit 1; tar --owner root --group root -czf data.tar.gz ./usr)
 
 # Control file
 cat <<END > "${tmp_folder}/control"
@@ -58,11 +55,11 @@ Tag: implemented-in::bash, interface::commandline, role::program
 Priority: optional
 Depends: bash, systemd
 Architecture: all
-Installed-Size: $(du -ks ${tmp_folder}|cut -f 1)
+Installed-Size: $(du -ks "${tmp_folder}"|cut -f 1)
 Maintainer: Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 Description: Simple At Scheduler
  SAT is a lightweight one-shot job scheduler for Linux systems using
- systemd. It provides an `at`-like user interface while using persistent
+ systemd. It provides an at-like user interface while using persistent
  systemd timers internally.
 Homepage: https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat
 END
@@ -77,19 +74,19 @@ cp "${tmp_folder}/postinst" "${tmp_folder}/postrm"
 chmod a+rx,go-w "${tmp_folder}/postinst" "${tmp_folder}/postrm"
 
 # Control archive
-rm -f ${tmp_folder}/control.tar.gz
-(cd ${tmp_folder}; tar --owner root --group root -czf control.tar.gz control postinst postrm)
+rm -f "${tmp_folder}"/control.tar.gz
+(cd "${tmp_folder}" || exit 1; tar --owner root --group root -czf control.tar.gz control postinst postrm)
 
 # Format deb package
-echo 2.0 > ${tmp_folder}/debian-binary
+echo 2.0 > "${tmp_folder}"/debian-binary
 
 # Create package (control before data)
-ar -r ${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb ${tmp_folder}/debian-binary ${tmp_folder}/control.tar.gz ${tmp_folder}/data.tar.gz
+ar -r "${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb" "${tmp_folder}/debian-binary" "${tmp_folder}/control.tar.gz" "${tmp_folder}/data.tar.gz"
       
 # Clean
-rm -rf ${tmp_folder}
+rm -rf "${tmp_folder}"
 
 # Prepare reprepro upload
 echo "# Prepare reprepro upload"
-echo "( cd /srv/www/debian/ ; reprepro includedeb trixie   ~/trixie/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
-echo "( cd /srv/www/debian/ ; reprepro dumpreferences ) | grep -i sat"
+echo "( cd /srv/www/debian/ || exit 1; reprepro includedeb trixie   ~/trixie/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
+echo "( cd /srv/www/debian/ || exit 1; reprepro dumpreferences ) | grep -i sat"
