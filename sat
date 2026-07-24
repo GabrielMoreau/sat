@@ -22,6 +22,18 @@ then
 fi
 
 DATE="$1 $2"
+# Check date syntax with systemd
+if ! systemd-analyze calendar "${DATE}" >/dev/null 2>&1; then
+    echo "sat: invalid date expression: ${DATE}" >&2
+    exit 1
+fi
+# Check date in the future
+DATE_TARGET=$(date -d "${DATE}" +%s)
+DATE_NOW=$(date +%s)
+if [ "${DATE_TARGET}" -le "${DATE_NOW}" ]; then
+    echo "sat: date must be in the future: ${DATE}" >&2
+    exit 1
+fi
 
 # Alloc an atomic job number
 exec 9>/var/lib/sat/lock
