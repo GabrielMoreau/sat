@@ -20,13 +20,18 @@ exit_usage() {
   exit_code=${1:-0}
 
   cat <<EOF
-Usage: sat [--bash|-b] [--zsh|-z] DATE TIME
+Usage:
+  sat DATE TIME               Submit a new job (run under /bin/sh)
+  sat -b|--bash DATE TIME     Submit a new job (run under Bash)
+  sat -z|--zsh  DATE TIME     Submit a new job (run under Zsh)
+  sat -h|--help               Show this help
+  sat -V|--version            Show version
 
 Examples:
-  echo "my_command" | sat 2026-08-21 12:30
-  echo "my_command" | sat now +5min
-  echo "my_command" | sat today 18:00
-  echo "my_command" | sat tomorrow 09:30
+  echo "bash command" | sat 2026-08-21 12:30
+  echo "bash command" | sat now +5min
+  echo "bash command" | sat today 18:00
+  echo "bash command" | sat tomorrow 09:30
 EOF
 
   exit "${exit_code}"
