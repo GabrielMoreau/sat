@@ -21,19 +21,23 @@ _sat() {
     case "${cur}" in
       "")
         COMPREPLY=( "+" )
+        compopt -o nospace
         ;;
       +)
         COMPREPLY=( "+1" "+5" "+10" "+15" "+30" "+60" )
         compopt -o nospace
         ;;
       +[0-9]*)
-        COMPREPLY=(
-          "${cur}second"
-          "${cur}minute"
-          "${cur}hour"
-          "${cur}day"
-        )
-        compopt -o nospace
+        if [[ "${cur}" =~ ^\+[0-9]+$ ]]
+        then
+          COMPREPLY=(
+            "${cur}second"
+            "${cur}minute"
+            "${cur}hour"
+            "${cur}day"
+          )
+          compopt -o nospace
+        fi
         ;;
     esac
     return 0
