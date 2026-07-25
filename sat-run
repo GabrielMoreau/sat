@@ -49,7 +49,7 @@ STARTTIME="$(date -Is)"
 # Mark job as running
 cat > "${STATUSFILE}" <<EOF
 state=running
-start=${STARTTIME}
+date_start=${STARTTIME}
 EOF
 
 # Ensure a failure state if the process is interrupted
