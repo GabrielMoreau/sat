@@ -43,6 +43,7 @@ install -Dm 0755 -t "${tmp_folder}"/usr/bin/                "${tmp_folder}"/sat 
 install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        "${tmp_folder}"/sat-run
 install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/system/ sat-run@.service
 install -Dm 0644 -t "${tmp_folder}"/usr/share/sat/          LICENSE.md
+install -Dm 0644 sat.bash_completion "${tmp_folder}"/usr/share/bash-completion/completions/sat
 
 # Create manuals
 mkdir -p "${tmp_folder}"/usr/share/man/{man1,man8}

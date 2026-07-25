@@ -1,0 +1,62 @@
+# bash completion for sat
+
+_sat() {
+  local cur prev arg1
+
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  arg1="${COMP_WORDS[1]}"
+
+  # First argument
+  if [ "${COMP_CWORD}" -eq 1 ]
+  then
+    COMPREPLY=( $(compgen -W "-h --help -V --version -b --bash -z --zsh now today tomorrow" -- "${cur}") )
+    return 0
+  fi
+
+  # Second argument after "now"
+  if [ "${COMP_CWORD}" -eq 2 ] && [ "${arg1}" = "now" ]
+  then
+    case "${cur}" in
+      "")
+        COMPREPLY=( "+" )
+        ;;
+      +)
+        COMPREPLY=( "+1" "+5" "+10" "+15" "+30" "+60" )
+        ;;
+      +[0-9]*)
+        COMPREPLY=(
+          "${cur}s"
+          "${cur}m"
+          "${cur}h"
+          "${cur}d"
+        )
+        ;;
+    esac
+    return 0
+  fi
+
+  # Time after today/tomorrow
+  if [ "${COMP_CWORD}" -eq 2 ]
+  then
+    case "${arg1}" in
+      today|tomorrow)
+        local h m
+        for h in $(seq -w 0 23)
+        do
+          for m in 00 15 30 45
+          do
+            COMPREPLY+=("${h}:${m}")
+          done
+        done
+        COMPREPLY=( $(compgen -W "${COMPREPLY[*]}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+  fi
+
+  return 0
+}
+
+complete -F _sat sat
