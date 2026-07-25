@@ -35,9 +35,10 @@ _sat() {
             "${cur}minute"
             "${cur}hour"
             "${cur}day"
+            "${cur}week"
           )
           compopt -o nospace
-        elif [[ "${cur}" =~ ^(\+[0-9]+)(s|m|h|d).* ]]
+        elif [[ "${cur}" =~ ^(\+[0-9]+)(s|m|h|d|w).* ]]
         then
           local value unit
           value="${BASH_REMATCH[1]}"
@@ -55,6 +56,9 @@ _sat() {
               ;;
             d)
               COMPREPLY=( "${value}day" )
+              ;;
+            w)
+              COMPREPLY=( "${value}week" )
               ;;
           esac
           compopt -o nospace
