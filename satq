@@ -21,6 +21,7 @@ Usage:
   satq -f|--failed     List failed jobs
   satq JOB_ID          Show detailed job information
   satq -h|--help       Show this help
+  satq -V|--version    Show version
 EOF
 }
 
@@ -164,6 +165,11 @@ show_job() {
 case "${1:-}" in
   -h|--help)
     usage
+    exit 0
+    ;;
+
+  -V|--version)
+    echo "satq @VERSION@"
     exit 0
     ;;
 

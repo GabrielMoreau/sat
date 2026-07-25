@@ -14,11 +14,29 @@ export LANG=C
 JOBDIR=/var/lib/sat/job
 SYSTEMDDIR=/etc/systemd/system
 
-if [ $# -eq 0 ]
-then
-  echo "Usage: satrm ID [ID ...]" >&2
-  exit 1
-fi
+usage() {
+  cat <<EOF
+Usage:
+  satrm ID [ID ...]    Remove scheduled jobs
+  satrm -h|--help      Show this help
+  satrm -V|--version   Show version
+EOF
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  -V|--version)
+    echo "satrm @VERSION@"
+    exit 0
+    ;;
+  '')
+    usage >&2
+    exit 1
+    ;;
+esac
 
 CHANGED=0
 
