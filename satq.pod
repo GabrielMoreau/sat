@@ -67,6 +67,7 @@ B<satq> returns:
 
 L<sat(1)>,
 L<satrm(1)>,
+L<sat-run(8)>,
 L<systemd.timer(5)>
 
 

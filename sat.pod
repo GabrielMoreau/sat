@@ -204,6 +204,7 @@ The administrator must decide whether to inspect, remove, or manually run the fa
 
 L<satq(1)>,
 L<satrm(1)>,
+L<sat-run(8)>,
 L<systemd.timer(5)>,
 L<systemd.service(5)>,
 L<journalctl(1)>
