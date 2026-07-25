@@ -63,6 +63,11 @@ L<satq(1)>,
 L<systemd.timer(5)>
 
 
+=head1 VERSION
+
+SAT version @VERSION@
+
+
 =head1 AUTHORS
 
 Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
