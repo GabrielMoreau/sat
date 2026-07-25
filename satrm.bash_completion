@@ -1,0 +1,29 @@
+# bash completion for satrm
+
+_satrm()
+{
+  local cur
+
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+
+  # Options
+  if [[ "${cur}" == -* ]]
+  then
+    COMPREPLY=( $(compgen -W "-h --help -V --version" -- "${cur}") )
+    return 0
+  fi
+
+  # Job IDs
+  local jobdir=/var/lib/sat/job
+
+  if [ -d "${jobdir}" ]
+  then
+    local jobs
+    jobs=$(printf '%s\n' "${jobdir}"/*.sh 2>/dev/null | sed -n 's#.*/\([0-9]*\)\.sh#\1#p')
+
+    COMPREPLY=( $(compgen -W "${jobs}" -- "${cur}") )
+  fi
+}
+
+complete -F _satrm satrm
