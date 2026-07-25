@@ -31,8 +31,8 @@ EOF
   exit "${exit_code}"
 }
 
-OPT_SHORT=bzh
-OPT_LONG=bash,zsh,help
+OPT_SHORT=bzhV
+OPT_LONG=bash,zsh,help,version
 if ! OPT_PARSED=$(getopt --options "${OPT_SHORT}" --longoptions "${OPT_LONG}" --name "$0" -- "$@")
 then
   exit_usage 1 >&2
@@ -53,6 +53,10 @@ do
       ;;
     -h|--help)
       exit_usage 0
+      ;;
+    -V|--version)
+      echo "sat ${VERSION}"
+      exit 0
       ;;
     --)
       shift

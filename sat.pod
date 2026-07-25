@@ -212,6 +212,11 @@ Note: The master Git repository in on the L<GRICAD Gitlab|https://gricad-gitlab.
 Other Git repository are mirror or fork.
 
 
+=head1 VERSION
+
+SAT version @VERSION@
+
+
 =head1 AUTHORS
 
 Written by Gabriel Moreau <Gabriel.Moreau(A)univ-grenoble-alpes.fr> - Grenoble - France
