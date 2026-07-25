@@ -2,6 +2,7 @@
 #
 # Script: /sur/bin/satrm
 # Description: remove SAT job
+# Version: @VERSION@
 #
 # 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 

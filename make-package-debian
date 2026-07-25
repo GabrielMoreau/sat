@@ -33,14 +33,14 @@ PKG_VERSION=1
 }
 
 # Transform version
-for f in sat satq satrm *.pod
+for f in sat satq satrm sat-run *.pod
 do
   sed "s/@VERSION@/${CODE_VERSION}/g;" "${f}" > "${tmp_folder}/${f}"
 done
 
 # Install files
 install -Dm 0755 -t "${tmp_folder}"/usr/bin/                "${tmp_folder}"/sat "${tmp_folder}"/satq "${tmp_folder}"/satrm
-install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        sat-run
+install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        "${tmp_folder}"/sat-run
 install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/system/ sat-run@.service
 install -Dm 0644 -t "${tmp_folder}"/usr/share/sat/          LICENSE.md
 

@@ -2,6 +2,7 @@
 #
 # Script: /usr/libexec/sat/sat-run
 # Description: execute a SAT job
+# Version: @VERSION@
 #
 # 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 #

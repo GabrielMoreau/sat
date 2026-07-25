@@ -2,6 +2,7 @@
 #
 # Script: /usr/bin/satq
 # Description: list SAT jobs
+# Version: @VERSION@
 #
 # 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 
