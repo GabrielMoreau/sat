@@ -11,8 +11,9 @@ set -euo pipefail
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
-JOBDIR=/var/lib/sat/job
-SYSTEMDDIR=/etc/systemd/system
+# shellcheck source=/usr/libexec/sat/sat-common
+source /usr/libexec/sat/sat-common
+
 JOB_SHELL=/bin/sh
 
 exit_usage() {
@@ -35,6 +36,11 @@ Examples:
 EOF
 
   exit "${exit_code}"
+}
+
+trapjob_cleanup() {
+  [ -n "${JOBFILE_TMP:-}" ]   && rm -f "${JOBFILE_TMP}"
+  [ -n "${TIMERFILE_TMP:-}" ] && rm -f "${TIMERFILE_TMP}"
 }
 
 OPT_SHORT=bzhV
@@ -80,7 +86,11 @@ then
 fi
 DATE_ASKED="$1 $2"
 
-mkdir -p "${JOBDIR}"
+# Create folder
+install -dm 0700 "${SATDIR}"
+install -dm 0700 "${JOBDIR}"
+install -dm 0700 "${SYSTEMDDIR}"
+install -dm 0700 "$(dirname "${LOCKFILE}")"
 
 # Check job shell
 if [ ! -x "${JOB_SHELL}" ]
@@ -101,38 +111,55 @@ then
   exit 1
 fi
 
+# Temporary files
+JOBFILE_TMP=''
+TIMERFILE_TMP=''
+trap trapjob_cleanup EXIT INT TERM
+JOBFILE_TMP=$(mktemp --suffix .sat.sh)
+TIMERFILE_TMP=$(mktemp --suffix .sat.timer)
+
+# Read script command from stdin
+JOB_EMPTY=1
+{
+  echo "#!${JOB_SHELL}"
+  echo "set -e"
+  echo ''
+
+  while IFS= read -r line
+  do
+    [ -n "${line//[[:space:]]/}" ] && JOB_EMPTY=0
+    printf '%s\n' "${line}"
+  done
+} > "${JOBFILE_TMP}"
+
+# Test if no empty
+if [ "${JOB_EMPTY}" -eq 1 ]
+then
+  echo "sat: empty command" >&2
+  exit 1
+fi
+chmod 0700 "${JOBFILE_TMP}"
+
 # Alloc an atomic job number
-exec 9>/var/lib/sat/lock
+exec 9>"${LOCKFILE}"
+flock --exclusive 9
 
-flock 9
-
-IDFILE=/var/lib/sat/nextid
-
+IDFILE="${SATDIR}"/nextid
 if [ -f "${IDFILE}" ]
 then
   read -r ID < "${IDFILE}"
 else
   ID=1
 fi
-
 echo $((ID+1)) > "${IDFILE}"
 
 JOBID=$(printf "%06d" "${ID}")
-
 JOBFILE="${JOBDIR}/${JOBID}.sh"
 TIMERFILE="${SYSTEMDDIR}/sat-${JOBID}.timer"
 
-# Read script from stdin
-{
-  echo "#!${JOB_SHELL}"
-  echo "set -e"
-  echo ''
-  cat
-} > "${JOBFILE}"
-chmod 0700 "${JOBFILE}"
-
+# Timer file
 DATE_HMS=$(date -d "@${DATE_TARGET}" '+%Y-%m-%d %H:%M:%S')
-cat > "${TIMERFILE}" <<EOF
+cat > "${TIMERFILE_TMP}" <<EOF
 [Unit]
 Description=SAT job ${JOBID}
 
@@ -145,8 +172,18 @@ Unit=sat-run@${JOBID}.service
 WantedBy=timers.target
 EOF
 
-systemctl daemon-reload
-systemctl enable --now "sat-${JOBID}.timer"
+# Move the script job with the good ID
+mv "${JOBFILE_TMP}"   "${JOBFILE}"
+JOBFILE_TMP=''
+mv "${TIMERFILE_TMP}" "${TIMERFILE}"
+TIMERFILE_TMP=''
+
+# Lock free
+exec 9>&-
+
+# Reload systemd
+"${SYSTEMCTL[@]}" daemon-reload
+"${SYSTEMCTL[@]}" enable --now "sat-${JOBID}.timer"
 
 echo -n "scheduled job ${JOBID} at ${DATE_HMS}"
 if [ "${DATE_HMS}" != "${DATE_ASKED}" ] && [ "${DATE_HMS%:00}" != "${DATE_ASKED}"  ] 
