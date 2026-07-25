@@ -28,7 +28,7 @@ _sat() {
         compopt -o nospace
         ;;
       +[0-9]*)
-        if [[ "${cur}" =~ ^\+[0-9]+ ]]
+        if [[ "${cur}" =~ ^\+[0-9]+$ ]]
         then
           COMPREPLY=(
             "${cur}second"
@@ -36,6 +36,27 @@ _sat() {
             "${cur}hour"
             "${cur}day"
           )
+          compopt -o nospace
+        elif [[ "${cur}" =~ ^(\+[0-9]+)(s|m|h|d).* ]]
+        then
+          local value unit
+          value="${BASH_REMATCH[1]}"
+          unit="${BASH_REMATCH[2]}"
+
+          case "${unit}" in
+            s)
+              COMPREPLY=( "${value}second" )
+              ;;
+            m)
+              COMPREPLY=( "${value}minute" )
+              ;;
+            h)
+              COMPREPLY=( "${value}hour" )
+              ;;
+            d)
+              COMPREPLY=( "${value}day" )
+              ;;
+          esac
           compopt -o nospace
         fi
         ;;
