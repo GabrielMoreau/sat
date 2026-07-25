@@ -40,8 +40,10 @@ done
 
 # Install files
 install -Dm 0755 -t "${tmp_folder}"/usr/bin/                "${tmp_folder}"/sat "${tmp_folder}"/satq "${tmp_folder}"/satrm
-install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        "${tmp_folder}"/sat-run sat-common
+install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        "${tmp_folder}"/sat-run
+install -Dm 0644 -t "${tmp_folder}"/usr/libexec/sat/        sat-common
 install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/system/ sat-run@.service
+install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/user/   sat-run@.service
 install -Dm 0644 -t "${tmp_folder}"/usr/share/sat/          LICENSE.md
 for script in sat satq satrm
 do
@@ -68,7 +70,7 @@ Version: ${CODE_VERSION}-${PKG_VERSION}
 Section: utils
 Tag: implemented-in::bash, interface::commandline, role::program
 Priority: optional
-Depends: bash, systemd, coreutils, sed, grep
+Depends: bash, systemd, coreutils, util-linux, sed, grep
 Recommends: bash-completion
 Architecture: all
 Installed-Size: $(du -ks "${tmp_folder}/usr" | cut -f 1)
