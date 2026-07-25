@@ -55,7 +55,7 @@ do
       exit_usage 0
       ;;
     -V|--version)
-      echo "sat ${VERSION}"
+      echo "sat @VERSION@"
       exit 0
       ;;
     --)
