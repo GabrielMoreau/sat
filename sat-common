@@ -1,0 +1,16 @@
+# Common configuration for SAT
+
+if [ "$(id -u)" -eq 0 ]
+then
+  SATDIR=/var/lib/sat
+  SYSTEMDDIR=/etc/systemd/system
+  LOCKFILE=/run/lock/sat.lock
+  SYSTEMCTL=(systemctl)
+else
+  SATDIR="${XDG_STATE_HOME:-$HOME/.local/state}/sat"
+  SYSTEMDDIR="${XDG_CONFIG_HOME:-${HOME}/.config}/systemd/user"
+  LOCKFILE="${XDG_RUNTIME_DIR:-${SATDIR}}/sat.lock"
+  SYSTEMCTL=(systemctl --user)
+fi
+
+JOBDIR="${SATDIR}"/job
