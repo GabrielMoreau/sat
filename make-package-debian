@@ -66,6 +66,7 @@ Section: utils
 Tag: implemented-in::bash, interface::commandline, role::program
 Priority: optional
 Depends: bash, systemd, coreutils, sed, grep
+Recommends: bash-completion
 Architecture: all
 Installed-Size: $(du -ks "${tmp_folder}/usr" | cut -f 1)
 Maintainer: Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
