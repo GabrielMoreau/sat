@@ -17,11 +17,11 @@ SYSTEMDDIR='/etc/systemd/system'
 usage() {
   cat <<EOF
 Usage:
-  satq                 List scheduled jobs
-  satq -f|--failed     List failed jobs
-  satq JOB_ID          Show detailed job information
-  satq -h|--help       Show this help
-  satq -V|--version    Show version
+  satq                        List scheduled jobs
+  satq -f|--failed            List failed jobs
+  satq JOB_ID                 Show detailed job information
+  satq -h|--help              Show this help
+  satq -V|--version           Show version
 EOF
 }
 

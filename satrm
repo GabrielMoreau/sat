@@ -17,9 +17,9 @@ SYSTEMDDIR=/etc/systemd/system
 usage() {
   cat <<EOF
 Usage:
-  satrm ID [ID ...]    Remove scheduled jobs
-  satrm -h|--help      Show this help
-  satrm -V|--version   Show version
+  satrm JOB_ID [JOB_ID ...]   Remove scheduled jobs
+  satrm -h|--help             Show this help
+  satrm -V|--version          Show version
 EOF
 }
 
