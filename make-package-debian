@@ -32,18 +32,24 @@ PKG_VERSION=1
   exit 1
 }
 
+# Transform version
+for f in sat satq satrm *.pod
+do
+  sed "s/@VERSION@/${CODE_VERSION}/g;" "${f}" > "${tmp_folder}/${f}"
+done
+
 # Install files
-install -Dm 0755 -t "${tmp_folder}"/usr/bin/                sat satq satrm
+install -Dm 0755 -t "${tmp_folder}"/usr/bin/                "${tmp_folder}"/sat "${tmp_folder}"/satq "${tmp_folder}"/satrm
 install -Dm 0755 -t "${tmp_folder}"/usr/libexec/sat/        sat-run
 install -Dm 0644 -t "${tmp_folder}"/usr/lib/systemd/system/ sat-run@.service
 install -Dm 0644 -t "${tmp_folder}"/usr/share/sat/          LICENSE.md
 
 # Create manuals
 mkdir -p "${tmp_folder}"/usr/share/man/{man1,man8}
-pod2man --section=1 --release="SAT" sat.pod     | gzip > "${tmp_folder}"/usr/share/man/man1/sat.1.gz
-pod2man --section=1 --release="SAT" satq.pod    | gzip > "${tmp_folder}"/usr/share/man/man1/satq.1.gz
-pod2man --section=1 --release="SAT" satrm.pod   | gzip > "${tmp_folder}"/usr/share/man/man1/satrm.1.gz
-pod2man --section=8 --release="SAT" sat-run.pod | gzip > "${tmp_folder}"/usr/share/man/man8/sat-run.8.gz
+pod2man --section=1 --release="SAT ${CODE_VERSION}" "${tmp_folder}"/sat.pod     | gzip > "${tmp_folder}"/usr/share/man/man1/sat.1.gz
+pod2man --section=1 --release="SAT ${CODE_VERSION}" "${tmp_folder}"/satq.pod    | gzip > "${tmp_folder}"/usr/share/man/man1/satq.1.gz
+pod2man --section=1 --release="SAT ${CODE_VERSION}" "${tmp_folder}"/satrm.pod   | gzip > "${tmp_folder}"/usr/share/man/man1/satrm.1.gz
+pod2man --section=8 --release="SAT ${CODE_VERSION}" "${tmp_folder}"/sat-run.pod | gzip > "${tmp_folder}"/usr/share/man/man8/sat-run.8.gz
 
 # Good right
 chmod -R a+rX,go-w   "${tmp_folder}"/usr
