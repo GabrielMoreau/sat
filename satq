@@ -11,8 +11,8 @@ set -euo pipefail
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
-JOBDIR='/var/lib/sat/job'
-SYSTEMDDIR='/etc/systemd/system'
+# shellcheck source=/usr/libexec/sat/sat-common
+source /usr/libexec/sat/sat-common
 
 usage() {
   cat <<EOF
@@ -23,6 +23,11 @@ Usage:
   satq -h|--help              Show this help
   satq -V|--version           Show version
 EOF
+}
+
+create_folder() {
+  install -dm 0700 "${SATDIR}"
+  install -dm 0700 "${JOBDIR}"
 }
 
 normalize_id() {
@@ -49,7 +54,7 @@ get_state() {
   id="$1"
   statusfile="${JOBDIR}/${id}.status"
 
-  if systemctl is-active --quiet "sat-run@${id}.service"
+  if "${SYSTEMCTL[@]}" is-active --quiet "sat-run@${id}.service"
   then
     echo "running"
     return
@@ -74,8 +79,8 @@ get_state() {
 }
 
 list_jobs() {
+  create_folder
   printf "%-8s %-18s %-10s %s\n" "ID" "NEXT RUN" "STATE" "COMMAND"
-
   for timer in "${SYSTEMDDIR}"/sat-*.timer
   do
     [ -e "$timer" ] || continue
@@ -83,7 +88,7 @@ list_jobs() {
     local id next_run state cmd
     id=$(basename "$timer" .timer)
     id=${id#sat-}
-    next_run=$(systemctl show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
+    next_run=$("${SYSTEMCTL[@]}" show "sat-${id}.timer" -p NextElapseUSecRealtime --value 2>/dev/null || echo '-')
     if [ "${next_run}" != "-" ] && [ -n "${next_run}" ]
     then
       next_run=$(date -d "${next_run}" "+%F %H:%M")
@@ -96,8 +101,8 @@ list_jobs() {
 }
 
 list_failed() {
+  create_folder
   printf "%-8s %-18s %-8s %s\n" "ID" "LAST RUN" "EXIT" "COMMAND"
-
   for statusfile in "${JOBDIR}"/*.status
   do
     [ -e "$statusfile" ] || continue
@@ -115,6 +120,8 @@ list_failed() {
 show_job() {
   local id
   id=$(normalize_id "$1")
+
+  create_folder
 
   local jobfile statusfile timerfile
   jobfile="${JOBDIR}/${id}.sh"

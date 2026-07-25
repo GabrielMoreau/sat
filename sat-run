@@ -15,8 +15,8 @@ JOBID="${1:-}"
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
-JOBDIR="/var/lib/sat/job"
-SYSTEMDDIR="/etc/systemd/system"
+# shellcheck source=/usr/libexec/sat/sat-common
+source /usr/libexec/sat/sat-common
 
 JOBFILE="${JOBDIR}/${JOBID}.sh"
 STATUSFILE="${JOBDIR}/${JOBID}.status"
@@ -27,17 +27,22 @@ usage() {
   exit 2
 }
 
+create_folder() {
+  install -dm 0700 "${SATDIR}"
+  install -dm 0700 "${JOBDIR}"
+}
+
 if [ -z "${JOBID}" ]
 then
   usage
 fi
 
+create_folder
 if [ ! -x "${JOBFILE}" ]
 then
   echo "sat-run: missing or non executable job: ${JOBFILE}" >&2
   exit 127
 fi
-
 
 STARTTIME="$(date -Is)"
 
@@ -75,9 +80,9 @@ ENDTIME="$(date -Is)"
 # Successful execution
 if [ "$RETURNCODE" -eq 0 ]
 then
-  systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+  "${SYSTEMCTL[@]}" disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
   rm -f "${SYSTEMDDIR}/${SYSTEMDTIMER}" "${JOBFILE}" "${STATUSFILE}"
-  systemctl daemon-reload
+  "${SYSTEMCTL[@]}" daemon-reload
   exit 0
 fi
 
@@ -90,5 +95,5 @@ date_end=${ENDTIME}
 EOF
 
 # Disable timer to avoid automatic rerun
-systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+"${SYSTEMCTL[@]}" disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
 exit "${RETURNCODE}"

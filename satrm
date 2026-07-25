@@ -11,8 +11,8 @@ set -euo pipefail
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
-JOBDIR=/var/lib/sat/job
-SYSTEMDDIR=/etc/systemd/system
+# shellcheck source=/usr/libexec/sat/sat-common
+source /usr/libexec/sat/sat-common
 
 usage() {
   cat <<EOF
@@ -21,6 +21,11 @@ Usage:
   satrm -h|--help             Show this help
   satrm -V|--version          Show version
 EOF
+}
+
+create_folder() {
+  install -dm 0700 "${SATDIR}"
+  install -dm 0700 "${JOBDIR}"
 }
 
 case "${1:-}" in
@@ -39,6 +44,7 @@ case "${1:-}" in
 esac
 
 CHANGED=0
+create_folder
 
 for JOBID in "$@"
 do
@@ -57,7 +63,7 @@ do
 
   echo "remove job ${JOBID}"
   # Clean stop if the timer exist
-  systemctl disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
+  "${SYSTEMCTL[@]}" disable --now "${SYSTEMDTIMER}" >/dev/null 2>&1 || true
 
   rm -f \
     "${SYSTEMDDIR}/${SYSTEMDTIMER}" \
@@ -69,5 +75,5 @@ done
 
 if [ "${CHANGED}" -eq 1 ]
 then
-  systemctl daemon-reload
+  "${SYSTEMCTL[@]}" daemon-reload
 fi
