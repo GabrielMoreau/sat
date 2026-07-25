@@ -28,7 +28,7 @@ _sat() {
         compopt -o nospace
         ;;
       +[0-9]*)
-        if [[ "${cur}" =~ ^\+[0-9]+$ ]]
+        if [[ "${cur}" =~ ^\+[0-9]+ ]]
         then
           COMPREPLY=(
             "${cur}second"
