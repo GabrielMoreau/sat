@@ -19,12 +19,13 @@ pages:
     - mkdir -p public/download
     - $(wget --no-check-certificate ${CI_PAGES_URL}/download.tar.gz -O download.tar.gz || exit 0)
     - 'file download.tar.gz | grep "gzip compressed data" && { tar -xzf download.tar.gz public/download/ || echo "untar error" ; }'
-    - (cd public/download; ls -t -- sat_*.deb 2> /dev/null | tail -n +$((KEEP_PKG + 1)) | xargs -r rm -f --)
     - echo arrive here
     - make pages
+    - echo arrive there
     - tar -czf public/download.tar.gz public/download/
   artifacts:
     paths:
       - public
-  only:
-    - main
+    expire_in: 3 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

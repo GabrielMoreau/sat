@@ -7,6 +7,7 @@ set -euo pipefail
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
+KEEP_PKG=20
 CODE_VERSION=$(./get-version)
 
 tmp_folder=tmp
@@ -27,6 +28,7 @@ cp -p --no-clobber sat_*_all.deb public/download/
 (
   cd public/download
   ../../only-keep-1pkg-day | tee >(cat 1>&2) | bash
+  ls -t -- sat_*.deb 2> /dev/null | tail -n +$((KEEP_PKG + 1)) | xargs -r rm -f --
 )
 
 (
