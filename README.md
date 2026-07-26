@@ -12,8 +12,22 @@ The goal is simple:
 * remove completed jobs automatically;
 * leave failed jobs available for inspection.
 
-For regular users, SAT uses the user's `systemd --user` instance.
-Depending on the system configuration, timers may require lingering (`loginctl enable-linger`) to continue running after the user logs out.
+
+## Documentation (Project resources)
+
+Online documentation:
+
+* **User manual**
+  * `sat`: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/sat.html
+  * `satq`: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/satq.html
+  * `satrm`: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/satrm.html
+  * `sat-run`: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/sat-run.html
+
+* **Download** (**Debian packages**)
+  * https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/download/
+
+* **Source Code** (GitLab)
+  * https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat/
 
 
 ## Why SAT?
@@ -25,6 +39,7 @@ The traditional `at` command is convenient, but it has limitations on modern ser
 * integration with systemd logging and administration tools is missing.
 
 SAT uses systemd timers to provide a more robust execution model.
+
 
 ## Features
 
@@ -175,8 +190,9 @@ When SAT is used by a regular user, jobs are scheduled through the user's system
 
 By default, user timers only run while the user's systemd instance is active.
 On most systems this means while the user is logged in.
+Depending on the system configuration, timers may require lingering (`loginctl enable-linger`) to continue running after the user logs out.
 
-To allow timers to continue running after logout, enable *lingering*:
+To allow timers to continue running after logout, you must enable *lingering*:
 
 ```bash
 sudo loginctl enable-linger USERNAME
@@ -272,10 +288,11 @@ A similar approach works for non-root users by simply changing the paths.
 ```
 
 
-## Debian packaging
+## Installation
 
-SAT is designed to be packaged as a Debian package.
-The package should install:
+Pre-built Debian packages are available: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/download/
+
+The package installs:
 
 ```
 /usr/bin/
