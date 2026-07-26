@@ -219,13 +219,24 @@ The administrator must decide whether to inspect, remove, or manually run the fa
 
 =head1 SEE ALSO
 
-L<satq(1)>,
-L<satrm(1)>,
-L<sat-run(8)>,
+L<sat(1)|https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/sat.html>,
+L<satq(1)|https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/satq.html>,
+L<satrm(1)|https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/satrm.html>,
+L<sat-run(8)|https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/sat-run.html>,
 L<systemd.timer(5)>,
 L<systemd.service(5)>,
 L<journalctl(1)>,
 L<loginctl(1)>
+
+Project resources:
+
+=over
+
+=item * L<Web site (Gitlab)|https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat>
+
+=item * L<Download package (Debian)|https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/download/>
+
+=back
 
 Note: The master Git repository in on the L<GRICAD Gitlab|https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat>.
 Other Git repository are mirror or fork.
