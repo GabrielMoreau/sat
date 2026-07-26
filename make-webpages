@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# 2026/07/26 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+
+set -euo pipefail
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export LANG=C
+
+CODE_VERSION=$(./get-version)
+
+tmp_folder=tmp
+mkdir -p "${tmp_folder}" public/download
+
+# Transform version
+for f in *.pod
+do
+  sed "s/@VERSION@/${CODE_VERSION}/g;" "${f}" > "${tmp_folder}/${f}"
+  pod2html --css podstyle.css --index --header "${tmp_folder}/${f}" > public/"${f/%pod/html}"
+done
+
+cp -p podstyle.css public/
+cp -p LICENSE.md   public/
+
+cp -p --no-clobber sat_*_all.deb public/download/
+
+(
+  cd public/download
+  ../../only-keep-1pkg-day | tee >(cat 1>&2) | bash
+)
+
+(
+  cd public
+  ln -sf sat.html index.html
+)
+
+echo '<html><body><h1>SAT Debian Package</h1><ul>' > public/download/index.html
+(
+  cd public/download
+  while read -r file
+  do
+    printf '<li><a href="%s">%s</a> (%s)</li>\n' "${file}" "${file}" "$(stat -c %y "${file}" | cut -f 1 -d ' ')"
+  done < <(ls -1t -- *.deb) >> index.html
+)
+echo '</ul></body></html>' >> public/download/index.html
