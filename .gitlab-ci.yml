@@ -9,7 +9,7 @@ cache:
 before_script:
   - mkdir -p pkg-cache/deb
   - apt-get update -yqq
-  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget
+  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget file
 
 pages:
   stage: build
@@ -18,8 +18,9 @@ pages:
   script:
     - mkdir -p public/download
     - $(wget --no-check-certificate ${CI_PAGES_URL}/download.tar.gz -O download.tar.gz || exit 0)
-    - '[ -s download.tar.gz ] && { tar -xzf download.tar.gz public/download/ || echo "tar error" ; }'
+    - 'file download.tar.gz ] grep -q "gzip compressed data" && { tar -xzf download.tar.gz public/download/ || echo "tar error" ; }'
     - (cd public/download; ls -t -- sat_*.deb 2> /dev/null | tail -n +$((${KEEP_PKG} + 1)) | xargs -r rm -f)
+    - echo arrive here
     - make pages
     - tar -czf public/download.tar.gz public/download/
   artifacts:
