@@ -13,7 +13,7 @@ pkg:
 	./make-package-debian
 
 pages: pkg
-	./make-webpages
+	./make-pages
 
 help:
 	@echo "Possibles targets:"

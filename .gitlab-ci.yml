@@ -19,9 +19,7 @@ pages:
     - mkdir -p public/download
     - $(wget --no-check-certificate ${CI_PAGES_URL}/download.tar.gz -O download.tar.gz || exit 0)
     - 'file download.tar.gz | grep "gzip compressed data" && { tar -xzf download.tar.gz public/download/ || echo "untar error" ; }'
-    - echo arrive here
     - make pages
-    - echo arrive there
     - tar -czf public/download.tar.gz public/download/
   artifacts:
     paths:
