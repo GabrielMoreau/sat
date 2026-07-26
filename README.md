@@ -12,6 +12,9 @@ The goal is simple:
 * remove completed jobs automatically;
 * leave failed jobs available for inspection.
 
+For regular users, SAT uses the user's `systemd --user` instance.
+Depending on the system configuration, timers may require lingering (`loginctl enable-linger`) to continue running after the user logs out.
+
 
 ## Why SAT?
 
@@ -22,7 +25,6 @@ The traditional `at` command is convenient, but it has limitations on modern ser
 * integration with systemd logging and administration tools is missing.
 
 SAT uses systemd timers to provide a more robust execution model.
-
 
 ## Features
 
@@ -35,6 +37,7 @@ SAT uses systemd timers to provide a more robust execution model.
 * Failed jobs are preserved.
 * Manual retry or removal by administrator.
 * Full integration with systemd and journald.
+* Works for root and for regular users.
 
 
 ## Usage
@@ -139,17 +142,18 @@ SAT deliberately avoids storing job information in multiple places.
 The command itself is stored only once:
 
 ```
-/var/lib/sat/job/000042.sh
+(root) /var/lib/sat/job/sat-000042.sh
+(user) ~/.local/state/sat/job/sat-000042.sh
 ```
 
 The schedule is stored only in the systemd timer:
 
 ```
-/etc/systemd/system/sat-000042.timer
+(root) /etc/systemd/system/sat-000042.timer
+(user) ~/.config/systemd/user/sat-*.timer
 ```
 
 There is no duplicated database or metadata file.
-
 
 ### No automatic retry
 
@@ -165,10 +169,40 @@ An automatic retry could make a bad situation worse.
 SAT leaves the decision to the administrator.
 
 
+## User services and lingering
+
+When SAT is used by a regular user, jobs are scheduled through the user's systemd instance (`systemctl --user`).
+
+By default, user timers only run while the user's systemd instance is active.
+On most systems this means while the user is logged in.
+
+To allow timers to continue running after logout, enable *lingering*:
+
+```bash
+sudo loginctl enable-linger USERNAME
+```
+
+To disable it again:
+
+```bash
+sudo loginctl disable-linger USERNAME
+```
+
+You can check whether lingering is enabled with:
+
+```bash
+loginctl show-user USERNAME -p Linger
+```
+
+Root system timers are not affected by this limitation.
+
+
 ## Architecture
 
+A similar approach works for non-root users by simply changing the paths.
+
 ```
-             user
+             root
               |
               |
          +----v----+
@@ -176,14 +210,15 @@ SAT leaves the decision to the administrator.
          +----+----+
               |
               |
-    /var/lib/sat/job/000042.sh
+        /var/lib/sat/job/
+         sat-000042.sh
               |
               |
-    /etc/systemd/system/
+      /etc/systemd/system/
          sat-000042.timer
               |
               |
-         systemd
+           systemd
               |
               |
       sat-run@000042.service
@@ -209,22 +244,31 @@ SAT leaves the decision to the administrator.
 /usr/libexec/sat/sat-run
 ```
 
+### Common parameters
+
+```
+/usr/libexec/sat/sat-common
+```
+
 ### systemd integration
 
 ```
-/usr/lib/systemd/system/sat-run@.service
+(root) /usr/lib/systemd/system/sat-run@.service
+(user) /usr/lib/systemd/user/sat-run@.service
 ```
 
 ### Runtime data
 
 ```
-/var/lib/sat/job/
+(root) /var/lib/sat/job/
+(user) ~/.local/state/sat/job/
 ```
 
 ### Generated timers
 
 ```
-/etc/systemd/system/sat-*.timer
+(root) /etc/systemd/system/sat-*.timer
+(user) ~/.config/systemd/user/sat-*.timer
 ```
 
 
@@ -256,7 +300,8 @@ Execution output is handled by systemd journal.
 Examples:
 
 ```bash
-journalctl -u sat-run@000042.service
+(root) journalctl -u sat-run@000042.service
+(user) journalctl --user -u sat-run@000042.service
 ```
 
 or:
@@ -268,7 +313,7 @@ journalctl -xe
 
 ## Security considerations
 
-SAT is intended for system administration use.
+SAT is mainly intended for system administration use.
 The following directories must be protected:
 
 ```
@@ -276,8 +321,7 @@ The following directories must be protected:
 /etc/systemd/system/
 ```
 
-Only trusted users should be able to create or modify scheduled jobs.
-
+Only trusted users should be able to create or modify root scheduled jobs.
 A modified job script is equivalent to modifying a privileged scheduled command.
 
 
@@ -286,16 +330,7 @@ A modified job script is equivalent to modifying a privileged scheduled command.
 Possible future additions:
 
 * `satcat` — display job content;
-* `satrun` — run a job manually;
-* relative dates (`+2h`, `tomorrow 08:00`);
-* user mode using `systemd --user`;
-* shell completion;
-* Debian native integration.
-
-
-## License
-
-To be defined.
+* `satrun` — run a job manually.
 
 
 ## Author
