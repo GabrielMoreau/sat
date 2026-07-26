@@ -96,20 +96,33 @@ Remove a scheduled job:
  satrm 42
 
 
+=head1 USER MODE
+
+When executed as a regular user, B<sat> uses the user's systemd instance (B<systemctl --user>) instead of the system-wide instance.
+To allow scheduled jobs to run after the user has logged out, lingering must be enabled:
+
+ loginctl enable-linger USER
+
+Without lingering, user timers are active only while the user's systemd session is running.
+
+
 =head1 STORAGE
 
 Jobs are stored below:
 
- /var/lib/sat/job/
+ (root) /var/lib/sat/job/
+ (user) ~/.local/state/sat/job/
 
 Each job is stored as an executable Bash shell script:
 
- /var/lib/sat/job/000042.sh
+ (root) /var/lib/sat/job/000042.sh
+ (user) ~/.local/state/sat/job/000042.sh
 
 
 Generated systemd timer units are stored below:
 
- /etc/systemd/system/
+ (root) /etc/systemd/system/
+ (user) ~/.config/systemd/user/
 
 with names:
 
@@ -192,12 +205,16 @@ The administrator must decide whether to inspect, remove, or manually run the fa
  /usr/bin/satrm
 
  /usr/libexec/sat/sat-run
+ /usr/libexec/sat/sat-common
 
- /usr/lib/systemd/system/sat-run@.service
+ (root) /usr/lib/systemd/system/sat-run@.service
+ (user) /usr/lib/systemd/user/sat-run@.service
 
- /var/lib/sat/job/
+ (root) /var/lib/sat/job/
+ (user) ~/.local/state/sat/job/
 
- /etc/systemd/system/sat-*.timer
+ (root) /etc/systemd/system/sat-*.timer
+ (user) ~/.config/systemd/user/sat-*.timer
 
 
 =head1 SEE ALSO
@@ -207,7 +224,8 @@ L<satrm(1)>,
 L<sat-run(8)>,
 L<systemd.timer(5)>,
 L<systemd.service(5)>,
-L<journalctl(1)>
+L<journalctl(1)>,
+L<loginctl(1)>
 
 Note: The master Git repository in on the L<GRICAD Gitlab|https://gricad-gitlab.univ-grenoble-alpes.fr/legi/soft/trokata/sat>.
 Other Git repository are mirror or fork.

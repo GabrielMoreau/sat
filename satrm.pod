@@ -51,9 +51,11 @@ B<satrm> returns:
 
 =head1 FILES
 
- /var/lib/sat/job/
+ (root) /var/lib/sat/job/
+ (user) ~/.local/state/sat/job/
 
- /etc/systemd/system/sat-*.timer
+ (root) /etc/systemd/system/sat-*.timer
+ (user) ~/.config/systemd/user/sat-*.timer
 
 
 =head1 SEE ALSO

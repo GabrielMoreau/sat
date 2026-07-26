@@ -21,7 +21,8 @@ B<sat-run> executes the job script associated with the specified job identifier.
 
 The job script is expected to be stored as:
 
- /var/lib/sat/job/JOB_ID.sh
+ (root) /var/lib/sat/job/sat-JOB_ID.sh
+ (user) ~/.local/state/sat/job/sat-JOB_ID.sh
 
 The script is executed as a standalone shell program.
 The exit status of the job script determines the final state of the SAT job.
@@ -83,19 +84,23 @@ Special errors may return:
 
 Job scripts:
 
- /var/lib/sat/job/*.sh
+ (root) /var/lib/sat/job/sat-*.sh
+ (user) ~/.local/state/sat/job/sat-*.sh
 
 Job status files:
 
- /var/lib/sat/job/*.status
+ (root) /var/lib/sat/job/sat-*.status
+ (user) ~/.local/state/sat/job/sat-*.status
 
 Systemd timers:
 
- /etc/systemd/system/sat-*.timer
+ (root) /etc/systemd/system/sat-*.timer
+ (user) ~/.config/systemd/user/sat-*.timer
 
 Systemd template service:
 
- /usr/lib/systemd/system/sat-run@.service
+ (root) /usr/lib/systemd/system/sat-run@.service
+ (user) /usr/lib/systemd/user/sat-run@.service
 
 
 =head1 SECURITY
