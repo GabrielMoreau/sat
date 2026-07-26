@@ -1,0 +1,29 @@
+---
+image: amd64/debian:stable-slim
+
+cache:
+  key: package-cache-folder
+  paths:
+    - pkg-cache/
+
+before_script:
+  - mkdir -p pkg-cache/deb
+  - apt-get update -yqq
+  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget
+
+pages:
+  stage: build
+  variables:
+    KEEP_PKG: 50
+  script:
+    - mkdir -p public/download
+    - $(wget --no-check-certificate ${CI_PAGES_URL}/download.tar.gz -O download.tar.gz || exit 0)
+    - '[ -s download.tar.gz ] && { tar -xzf download.tar.gz public/download/ || echo "tar error" ; }'
+    - (cd public/download; ls -t -- sat_*.deb 2> /dev/null | tail -n +$((${KEEP_PKG} + 1)) | xargs -r rm -f)
+    - make pages
+    - tar -czf public/download.tar.gz public/download/
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
