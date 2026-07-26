@@ -1,12 +1,9 @@
 
-.PHONY: all clean cleanall pkg webpages help
+.PHONY: all clean pkg webpages help
 
-all: pkg pages
+all: pkg webpages
 
 clean:
-	@rm -rf tmp
-
-cleanall: clean
 	@rm -rf public *.deb
 
 pkg:
