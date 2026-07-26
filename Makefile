@@ -1,24 +1,16 @@
 
-.PHONY: all clean pkg webpages help
+.PHONY: help all clean pkg webpages
 
-all: pkg webpages
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n"} /^[a-zA-Z_-]+:.*?##/ { printf " \033[36mmake %-17s\033[0m #%s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-clean:
+all: pkg webpages ## Build all
+
+clean: ## Clean package and public folder
 	@rm -rf public *.deb
 
-pkg:
+pkg: ## Build Debian Package
 	./make-package-debian
 
-webpages: pkg
+webpages: pkg ## Build public webpages for GitLab CI pages
 	./make-webpages
-
-help:
-	@echo "Possibles targets:"
-	@echo " * all     : make manual"
-	@echo " * install : complete install"
-	@echo " * update  : update install (do not update cron file)"
-	@echo " * sync    : sync with official repository"
-	@echo " * upload  : upload on public dav forge space"
-	@echo " * stat    : svn stat with gnuplot graph"
-	@echo " * pkg     : build Debian package"
-	@echo "ignore - svn rules to ignore some files"
