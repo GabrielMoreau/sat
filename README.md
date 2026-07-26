@@ -60,7 +60,7 @@ SAT uses systemd timers to provide a more robust execution model.
 A command is provided through standard input:
 
 ```bash
-echo "usermgmt to-staff --employer DoD --job Programmer toto" | \
+echo "usermgmt to-staff --employer DoD --job Programmer johndoe" | \
   sat 2026-08-31 23:59
 ```
 
@@ -83,7 +83,7 @@ Example:
 
 ```
 ID       NEXT RUN                  STATE      COMMAND
-000042   2026-08-31 23:59          waiting    usermgmt to-staff --employer DoD --job Programmer toto
+000042   2026-08-31 23:59          waiting    usermgmt to-staff --employer DoD --job Programmer johndoe
 000043   2026-09-01 08:00          failed     backup --full
 ```
 

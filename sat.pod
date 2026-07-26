@@ -81,7 +81,7 @@ It does not change the shell used to invoke B<sat> itself.
 
 Schedule a command:
 
- echo "usermgmt to-staff --employer DoD --job Programmer toto" | sat 2026-08-31 23:59
+ echo "usermgmt to-staff --employer DoD --job Programmer johndoe" | sat 2026-08-31 23:59
 
 Example output:
 

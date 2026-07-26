@@ -39,7 +39,7 @@ List scheduled jobs:
 Example output:
 
  ID       NEXT RUN                   STATE     COMMAND
- 000042   2026-08-31 23:59           waiting   usermgmt to-staff --employer DoD --job Programmer toto
+ 000042   2026-08-31 23:59           waiting   usermgmt to-staff --employer DoD --job Programmer johndoe
  000043   2026-09-01 08:00           failed    backup --full
 
 
