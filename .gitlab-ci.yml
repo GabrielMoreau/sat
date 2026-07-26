@@ -14,12 +14,12 @@ before_script:
 pages:
   stage: build
   variables:
-    KEEP_PKG: 50
+    KEEP_PKG: 20
   script:
     - mkdir -p public/download
     - $(wget --no-check-certificate ${CI_PAGES_URL}/download.tar.gz -O download.tar.gz || exit 0)
-    - 'file download.tar.gz | grep -q "gzip compressed data" && { tar -xzf download.tar.gz public/download/ || echo "tar error" ; }'
-    - (cd public/download; ls -t -- sat_*.deb 2> /dev/null | tail -n +$((${KEEP_PKG} + 1)) | xargs -r rm -f)
+    - 'file download.tar.gz | grep "gzip compressed data" && { tar -xzf download.tar.gz public/download/ || echo "untar error" ; }'
+    - (cd public/download; ls -t -- sat_*.deb 2> /dev/null | tail -n +$((KEEP_PKG + 1)) | xargs -r rm -f --)
     - echo arrive here
     - make pages
     - tar -czf public/download.tar.gz public/download/
