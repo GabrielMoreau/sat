@@ -1,5 +1,5 @@
 
-.PHONY: all clean cleanall pkg pages help
+.PHONY: all clean cleanall pkg webpages help
 
 all: pkg pages
 
@@ -12,8 +12,8 @@ cleanall: clean
 pkg:
 	./make-package-debian
 
-pages: pkg
-	./make-pages
+webpages: pkg
+	./make-webpages
 
 help:
 	@echo "Possibles targets:"
