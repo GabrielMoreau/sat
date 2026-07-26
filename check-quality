@@ -2,7 +2,7 @@
 #
 # 2026/07/24 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 
-for script in sat satq satrm sat-run check-quality get-version make-package-debian
+for script in sat satq satrm sat-run check-quality get-version make-package-debian make-webpages only-keep-1pkg-day
 do
-  shellcheck "${script}"
+  shellcheck -x "${script}"
 done
