@@ -13,9 +13,7 @@ The goal is simple:
 * leave failed jobs available for inspection.
 
 
-## Documentation (Project resources)
-
-Online documentation:
+## Documentation and project resources
 
 * **User manual**
   * `sat`: https://legi.gricad-pages.univ-grenoble-alpes.fr/soft/trokata/sat/sat.html
