@@ -2,14 +2,14 @@
 image: amd64/debian:stable-slim
 
 cache:
-  key: package-cache-folder
+  key: cache-folder
   paths:
-    - pkg-cache/
+    - cache/
 
 before_script:
-  - mkdir -p pkg-cache/deb
+  - mkdir -p cache/deb
   - apt-get update -yqq
-  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget file git
+  - apt-get -o dir::cache::archives='cache/deb' install -yqq perl make binutils findutils tar gzip wget file git
 
 pages:
   stage: build
