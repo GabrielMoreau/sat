@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# only-keep-1pkg-day
+#
+# 2025/02/25 Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
+#
+# Use find command, protect joker with simple quote or use % (equivalent for * here)
+# See find(1) and fnmatch(3)
+# ./only-keep-1pkg-day 'MySoft-*.exe' 'MyPkg-*.zip' | bash
+# ./only-keep-1pkg-day MySoft-%.exe | tee >(cat 1>&2) | bash
+
+export LANG=C
+
+for search in "$@"
+do
+	# Find all files, sort by date
+	# and keep only the most recent for each day
+	find .  -maxdepth 1 -type f -a -name "${search//%/*}" -printf "%TY-%Tm-%Td %TT %p\n" | \
+	sort | \
+	perl -ne '
+		BEGIN {
+			$previous_date = "";
+			$previous_file = "";
+		}
+		# Capture day date and filename
+		if (/^(\d{4}-\d{2}-\d{2}) \S+ (.*)$/) {
+			my $current_date = $1;
+			my $current_file = $2;
+
+			if ($current_date eq $previous_date) {
+				# if date not change, remove previous file
+				if (-e $previous_file) {
+					print "rm -f $previous_file\n";
+				}
+			} else {
+				# update date
+				$previous_date = $current_date;
+			}
+			# update file
+			$previous_file = $current_file;
+		}
+		'
+done
