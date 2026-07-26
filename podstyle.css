@@ -1,0 +1,67 @@
+body {
+  background: white;
+  color: black;
+  font-family: arial,sans-serif;
+  margin: auto;
+  padding: 1ex;
+  max-width: 100ex;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-width: 0;
+  color: inherit;
+}
+
+td {
+  margin: 0;
+  padding: 0;
+}
+
+div {
+  border-width: 0;
+}
+
+dt {
+  margin-top: 1em;
+}
+
+th {
+  background: #bbbbbb;
+  color: inherit;
+  padding: 0.4ex 1ex;
+  text-align: left;
+}
+
+th a:link,
+th a:visited {
+  background: transparent;
+  color: black;
+}
+
+pre {
+  background: #dddddd;
+  border: 1px solid black;
+  color: black;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  white-space: pre;
+}
+
+h1 {
+  background: transparent;
+  color: #006699;
+  font-size: large;
+}
+
+h2 {
+  background: transparent;
+  color: #006699;
+  font-size: medium;
+}
+
+li {
+  line-height: 1.2em;
+  list-style-type: none;
+}
