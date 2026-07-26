@@ -9,7 +9,7 @@ cache:
 before_script:
   - mkdir -p pkg-cache/deb
   - apt-get update -yqq
-  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget file
+  - apt-get -o dir::cache::archives='pkg-cache/deb' install -yqq perl make binutils findutils tar gzip wget file git
 
 pages:
   stage: build
