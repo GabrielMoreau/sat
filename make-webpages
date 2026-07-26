@@ -10,14 +10,20 @@ export LANG=C
 KEEP_PKG=20
 CODE_VERSION=$(./get-version)
 
-tmp_folder=tmp
+# Temporary folder
+tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
+[ -n "${tmp_folder}" ] && [ -d "${tmp_folder}" ] || exit 1
+
+# Clean at end of script in all case
+trap 'rm -rf "${tmp_folder:-}"' EXIT INT TERM
+
 mkdir -p "${tmp_folder}" public/download
 
 # Transform version
 for f in *.pod
 do
   sed "s/@VERSION@/${CODE_VERSION}/g;" "${f}" > "${tmp_folder}/${f}"
-  pod2html --css podstyle.css --index --header "${tmp_folder}/${f}" > public/"${f/%pod/html}"
+  (cd "${tmp_folder}" || continue; pod2html --css podstyle.css --index --header "${f}") > public/"${f/%pod/html}"
 done
 
 cp -p podstyle.css public/
