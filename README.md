@@ -232,7 +232,9 @@ A similar approach works for non-root users by simply changing the paths.
          sat-000042.timer
               |
               |
-           systemd
+         +----v----+
+         | systemd <---------- sat-run@.service
+         +----+----+
               |
               |
       sat-run@000042.service
