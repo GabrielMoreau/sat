@@ -1,4 +1,4 @@
-# SAT — Simple At Scheduler
+# SAT — Simple persistent At Scheduler
 
 SAT is a lightweight one-shot job scheduler for Linux systems using systemd.
 It provides an `at`-like user interface while using persistent systemd timers internally.

@@ -75,7 +75,7 @@ Recommends: bash-completion
 Architecture: all
 Installed-Size: $(du -ks "${tmp_folder}/usr" | cut -f 1)
 Maintainer: Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
-Description: Simple At Scheduler
+Description: Simple persistent At Scheduler
  SAT is a lightweight one-shot job scheduler for Linux systems using
  systemd. It provides an at-like user interface while using persistent
  systemd timers internally.
