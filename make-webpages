@@ -42,7 +42,8 @@ cp -p --no-clobber sat_*_all.deb public/download/
   ln -sf sat.html index.html
 )
 
-echo '<html><body><h1>SAT Debian Package</h1><ul>' > public/download/index.html
+PKG_VERSION=$(grep '^PKG_VERSION=' make-package-debian | cut -f 2 -d '=')
+echo '<html><body><h1>SAT Debian Package (Latest version: '"${CODE_VERSION}-${PKG_VERSION}"')</h1><ul>' > public/download/index.html
 (
   cd public/download
   while read -r file
