@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# Clean at end of script in all case
+trap 'rm -rf "${tmp_folder:-}"' EXIT QUIT
+
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
@@ -19,9 +22,6 @@ done
 # Temporary folder
 tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
 [ -n "${tmp_folder}" ] && [ -d "${tmp_folder}" ] || exit 1
-
-# Clean at end of script in all case
-trap 'rm -rf "${tmp_folder:-}"' EXIT
 
 # Set Name and Version
 PKG_NAME=sat
@@ -60,6 +60,9 @@ pod2man --section=8 --release="SAT ${CODE_VERSION}" "${tmp_folder}"/sat-run.pod 
 # Good right
 chmod -R a+rX,go-w   "${tmp_folder}"/usr
 
+# Package size
+PKG_SIZE=$(du -ks "${tmp_folder}"/usr | cut -f 1)
+
 # Data archive
 (cd "${tmp_folder}" || exit 1; tar --owner root --group root -czf data.tar.gz ./usr)
 
@@ -73,7 +76,7 @@ Priority: optional
 Depends: bash, systemd, coreutils, util-linux, sed, grep
 Recommends: bash-completion
 Architecture: all
-Installed-Size: $(du -ks "${tmp_folder}/usr" | cut -f 1)
+Installed-Size: ${PKG_SIZE}
 Maintainer: Gabriel Moreau <Gabriel.Moreau@univ-grenoble-alpes.fr>
 Description: Simple persistent At Scheduler
  SAT is a lightweight one-shot job scheduler for Linux systems using
@@ -101,7 +104,13 @@ echo 2.0 > "${tmp_folder}"/debian-binary
 # Create package (control before data)
 ar -r "${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}"_all.deb "${tmp_folder}"/debian-binary "${tmp_folder}"/control.tar.gz "${tmp_folder}"/data.tar.gz
       
+# Clean
+rm -rf "${tmp_folder}"
+
 # Prepare reprepro upload
 echo "# Prepare reprepro upload"
-echo "( cd /srv/www/debian/ || exit 1; reprepro includedeb trixie   ~/trixie/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
-echo "( cd /srv/www/debian/ || exit 1; reprepro dumpreferences ) | grep -i sat"
+for dist in buster bullseye bookworm trixie
+do
+  echo "( cd /srv/www/debian/ || exit 1; reprepro includedeb '${dist}' ~/${dist}/${PKG_NAME}_${CODE_VERSION}-${PKG_VERSION}_all.deb )"
+done
+echo "( cd /srv/www/debian/ ; reprepro dumpreferences ) | grep -i -- 'sat'"
