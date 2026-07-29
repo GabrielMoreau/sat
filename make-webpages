@@ -8,10 +8,11 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LANG=C
 
 KEEP_PKG=20
+PKG_NAME=sat
 CODE_VERSION=$(./get-version)
 
 # Temporary folder
-tmp_folder=$(mktemp --directory /tmp/sat-XXXXXX)
+tmp_folder=$(mktemp --directory "/tmp/${PKG_NAME}-XXXXXX")
 [ -n "${tmp_folder}" ] && [ -d "${tmp_folder}" ] || exit 1
 
 # Clean at end of script in all case
@@ -29,17 +30,17 @@ done
 cp -p podstyle.css public/
 cp -p LICENSE.md   public/
 
-cp -p --no-clobber sat_*_all.deb public/download/
+cp -p --no-clobber "${PKG_NAME}"_*.deb public/download/
 
 (
   cd public/download
-  ../../only-keep-1pkg-day sat_%.deb | tee >(cat 1>&2) | bash
-  ls -t -- sat_*.deb 2> /dev/null | tail -n +$((KEEP_PKG + 1)) | xargs -r rm -f --
+  ../../only-keep-1pkg-day "${PKG_NAME}"_%.deb | tee >(cat 1>&2) | bash
+  ls -t -- "${PKG_NAME}"_*.deb 2> /dev/null | tail -n +$((KEEP_PKG + 1)) | xargs -r rm -f --
 )
 
 (
   cd public
-  ln -sf sat.html index.html
+  ln -sf "${PKG_NAME}".html index.html
 )
 
 PKG_VERSION=$(grep '^PKG_VERSION=' make-package-debian | cut -f 2 -d '=')
